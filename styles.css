@@ -116,3 +116,50 @@ button,input,textarea,select{font:inherit}
 
 .top-card{border-color:#68323a;box-shadow:0 18px 50px rgba(239,63,79,.08)}
 button:disabled{opacity:.6;cursor:not-allowed}
+
+
+/* Likes + counters */
+.card-metrics{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin:12px 0;
+  color:#8f8f99;
+  font-size:12px;
+  font-weight:700;
+}
+.like-btn{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  border:1px solid #3b3b43;
+  border-radius:12px;
+  padding:12px 14px;
+  background:#202026;
+  color:#f4f4f5;
+  font-weight:900;
+  cursor:pointer;
+  transition:.16s ease;
+}
+.like-btn:hover{
+  border-color:#6c3a40;
+  transform:translateY(-1px);
+}
+.like-btn.active{
+  background:#35171b;
+  border-color:#8b3943;
+  color:#ff9ca5;
+}
+.like-count{
+  min-width:22px;
+  text-align:center;
+  border-left:1px solid rgba(255,255,255,.12);
+  padding-left:8px;
+}
+.like-btn:disabled{
+  opacity:.65;
+  cursor:wait;
+  transform:none;
+}

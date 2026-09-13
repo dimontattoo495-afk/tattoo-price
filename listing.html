@@ -1,74 +1,228 @@
 <!doctype html>
 <html lang="ru">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Работа мастера — TATTOO PRICE</title><link rel="stylesheet" href="./styles.css"></head>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Работа мастера — TATTOO PRICE</title>
+<link rel="stylesheet" href="./styles.css">
+</head>
 <body>
 <div class="wrap">
-<header class="top"><a class="logo" href="./index.html">TATTOO <b>PRICE</b></a><nav class="nav"><a href="./index.html">Все работы</a><a class="primary" href="./publish.html">Разместить работу</a></nav></header>
-<div class="pagehead"><div class="eyebrow" id="eyebrow">TATTOO PRICE</div><div class="muted">Публичная страница объявления</div></div>
-<div id="loading" class="panel">Загружаем объявление…</div>
-<div class="detail" id="detail" hidden>
- <div>
-  <img id="main" class="gallery-main" src="./assets/work1.svg">
-  <div class="thumbs" id="thumbs"></div>
-  <section class="panel" style="margin-top:16px"><h2>О работе</h2><p class="muted" id="description" style="line-height:1.7"></p></section>
- </div>
- <aside><div class="sidecard">
-  <div class="tags" id="tags"></div>
-  <h1 id="title"></h1>
-  <div class="price" id="price"></div>
-  <div class="muted">Мастер</div><div style="font-size:20px;font-weight:900;margin-top:3px" id="master"></div>
-  <div class="meta-list">
-   <div class="meta-item"><span>Город</span><span id="city"></span></div>
-   <div class="meta-item"><span>Стиль</span><span id="style"></span></div>
-   <div class="meta-item"><span>Просмотров</span><span id="views"></span></div>
-  </div>
-  <div class="muted" style="font-size:12px;line-height:1.45">Оплата татуировки происходит напрямую мастеру. Сайт продаёт только размещение объявления.</div>
-  <div class="socials" id="socials"></div>
- </div></aside>
+<header class="top">
+  <a class="logo" href="./index.html">TATTOO <b>PRICE</b></a>
+  <nav class="nav">
+    <a href="./index.html">Все работы</a>
+    <a class="primary" href="./publish.html">Разместить работу</a>
+  </nav>
+</header>
+
+<div class="pagehead">
+  <div class="eyebrow" id="eyebrow">TATTOO PRICE</div>
+  <div class="muted">Публичная страница объявления</div>
 </div>
+
+<div id="loading" class="panel">Загружаем объявление…</div>
+
+<div class="detail" id="detail" hidden>
+  <div>
+    <img id="main" class="gallery-main" src="./assets/work1.svg">
+
+    <div class="thumbs" id="thumbs"></div>
+
+    <section class="panel" style="margin-top:16px">
+      <h2>О работе</h2>
+      <p class="muted" id="description" style="line-height:1.7"></p>
+    </section>
+  </div>
+
+  <aside>
+    <div class="sidecard">
+      <div class="tags" id="tags"></div>
+      <h1 id="title"></h1>
+      <div class="price" id="price"></div>
+
+      <div class="muted">Мастер</div>
+      <div style="font-size:20px;font-weight:900;margin-top:3px" id="master"></div>
+
+      <div class="meta-list">
+        <div class="meta-item">
+          <span>Город</span><span id="city"></span>
+        </div>
+        <div class="meta-item">
+          <span>Стиль</span><span id="style"></span>
+        </div>
+        <div class="meta-item">
+          <span>Просмотров</span><span id="views"></span>
+        </div>
+        <div class="meta-item">
+          <span>Лайков</span><span id="likes"></span>
+        </div>
+      </div>
+
+      <button class="like-btn" id="likeBtn" type="button">
+        <span id="likeIcon">♡</span>
+        <span id="likeText">Нравится</span>
+        <span class="like-count" id="likeCount">0</span>
+      </button>
+
+      <div class="muted" style="font-size:12px;line-height:1.45;margin-top:13px">
+        Оплата татуировки происходит напрямую мастеру.
+        Сайт продаёт только размещение объявления.
+      </div>
+
+      <div class="socials" id="socials"></div>
+    </div>
+  </aside>
+</div>
+
 <footer class="footer">TATTOO PRICE</footer>
 </div>
+
 <script src="./supabase-config.js"></script>
 <script src="./tp-api.js"></script>
 <script>
-const n=new URLSearchParams(location.search).get("n");
-const loading=document.querySelector("#loading"), detail=document.querySelector("#detail");
-const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
-const money=x=>x==null?"":new Intl.NumberFormat("ru-RU").format(x)+" ₽";
+const n = new URLSearchParams(location.search).get("n");
+const loading = document.querySelector("#loading");
+const detail = document.querySelector("#detail");
+const likeBtn = document.querySelector("#likeBtn");
+
+let currentLiked = false;
+
+const esc = s => String(s ?? "").replace(/[&<>"']/g, m => ({
+  "&":"&amp;",
+  "<":"&lt;",
+  ">":"&gt;",
+  '"':"&quot;",
+  "'":"&#039;"
+}[m]));
+
+const money = x =>
+  x == null ? "" : new Intl.NumberFormat("ru-RU").format(x) + " ₽";
+
 function priceText(x){
-  if(x.price_type==="negotiable" || x.work_price==null) return "Цена по договорённости";
-  const m=money(x.work_price);
-  return {from:"от "+m,fixed:m,session:m+" за сеанс",hour:m+" за час"}[x.price_type] || "от "+m;
-}
-(async()=>{
- try{
-  if(!n) throw new Error("Не указан номер объявления");
-  const x=await TP.getListing(n);
-  if(!x) throw new Error("Объявление не найдено или ещё не опубликовано");
-  document.title=(x.title||"Работа")+" — TATTOO PRICE";
-  document.querySelector("#eyebrow").textContent=`${x.city||""} · ${x.style||""}`;
-  document.querySelector("#title").textContent=x.title||"";
-  document.querySelector("#description").textContent=x.description||"";
-  document.querySelector("#master").textContent=x.master_name||"";
-  document.querySelector("#city").textContent=x.city||"";
-  document.querySelector("#style").textContent=x.style||"";
-  document.querySelector("#views").textContent=x.views||0;
-  document.querySelector("#price").textContent=priceText(x);
-  document.querySelector("#tags").innerHTML=`<span class="tag">${esc(x.city)}</span><span class="tag">${esc(x.style)}</span>${x.plan==="top"?'<span class="tag hot">TOP</span>':""}`;
-  const photos=Array.isArray(x.photos)?x.photos:[];
-  if(photos.length){
-   const main=document.querySelector("#main");
-   main.src=TP.photoUrl(photos[0].storage_path);
-   document.querySelector("#thumbs").innerHTML=photos.map(p=>`<img src="${TP.photoUrl(p.storage_path)}" loading="lazy">`).join("");
-   document.querySelectorAll("#thumbs img").forEach(img=>img.onclick=()=>main.src=img.src);
+  if(x.price_type === "negotiable" || x.work_price == null){
+    return "Цена по договорённости";
   }
-  const social=[];
-  if(x.telegram_url) social.push(`<a class="btn" target="_blank" rel="noopener" href="${esc(x.telegram_url)}">Telegram</a>`);
-  if(x.vk_url) social.push(`<a class="btn secondary" target="_blank" rel="noopener" href="${esc(x.vk_url)}">VK</a>`);
-  if(x.website_url) social.push(`<a class="btn secondary" target="_blank" rel="noopener" href="${esc(x.website_url)}">Сайт</a>`);
-  document.querySelector("#socials").innerHTML=social.join("");
-  loading.hidden=true; detail.hidden=false;
- }catch(e){ loading.textContent=e.message; }
+
+  const m = money(x.work_price);
+
+  return {
+    from: "от " + m,
+    fixed: m,
+    session: m + " за сеанс",
+    hour: m + " за час"
+  }[x.price_type] || "от " + m;
+}
+
+function renderLike(liked, count){
+  currentLiked = !!liked;
+  const c = Number(count || 0);
+
+  document.querySelector("#likes").textContent = c;
+  document.querySelector("#likeCount").textContent = c;
+  document.querySelector("#likeIcon").textContent = currentLiked ? "♥" : "♡";
+  document.querySelector("#likeText").textContent =
+    currentLiked ? "Вам нравится" : "Нравится";
+
+  likeBtn.classList.toggle("active", currentLiked);
+  likeBtn.setAttribute("aria-pressed", currentLiked ? "true" : "false");
+}
+
+async function loadListing(){
+  if(!n){
+    throw new Error("Не указан номер объявления");
+  }
+
+  const x = await TP.getListing(n);
+
+  if(!x){
+    throw new Error("Объявление не найдено или ещё не опубликовано");
+  }
+
+  document.title = (x.title || "Работа") + " — TATTOO PRICE";
+  document.querySelector("#eyebrow").textContent =
+    `${x.city || ""} · ${x.style || ""}`;
+
+  document.querySelector("#title").textContent = x.title || "";
+  document.querySelector("#description").textContent = x.description || "";
+  document.querySelector("#master").textContent = x.master_name || "";
+  document.querySelector("#city").textContent = x.city || "";
+  document.querySelector("#style").textContent = x.style || "";
+  document.querySelector("#views").textContent = Number(x.views || 0);
+  document.querySelector("#price").textContent = priceText(x);
+
+  renderLike(x.liked, x.likes);
+
+  document.querySelector("#tags").innerHTML =
+    `<span class="tag">${esc(x.city)}</span>` +
+    `<span class="tag">${esc(x.style)}</span>` +
+    (x.plan === "top" ? '<span class="tag hot">TOP</span>' : "");
+
+  const photos = Array.isArray(x.photos) ? x.photos : [];
+
+  if(photos.length){
+    const main = document.querySelector("#main");
+    main.src = TP.photoUrl(photos[0].storage_path);
+
+    document.querySelector("#thumbs").innerHTML =
+      photos.map(p =>
+        `<img src="${TP.photoUrl(p.storage_path)}" loading="lazy" alt="">`
+      ).join("");
+
+    document.querySelectorAll("#thumbs img").forEach(img =>
+      img.onclick = () => main.src = img.src
+    );
+  }
+
+  const social = [];
+
+  if(x.telegram_url){
+    social.push(
+      `<a class="btn" target="_blank" rel="noopener" href="${esc(x.telegram_url)}">Telegram</a>`
+    );
+  }
+
+  if(x.vk_url){
+    social.push(
+      `<a class="btn secondary" target="_blank" rel="noopener" href="${esc(x.vk_url)}">VK</a>`
+    );
+  }
+
+  if(x.website_url){
+    social.push(
+      `<a class="btn secondary" target="_blank" rel="noopener" href="${esc(x.website_url)}">Сайт</a>`
+    );
+  }
+
+  document.querySelector("#socials").innerHTML = social.join("");
+
+  loading.hidden = true;
+  detail.hidden = false;
+}
+
+likeBtn.addEventListener("click", async () => {
+  if(!n || likeBtn.disabled) return;
+
+  likeBtn.disabled = true;
+
+  try{
+    const result = await TP.toggleLike(n);
+    renderLike(result.liked, result.likes);
+  }catch(e){
+    console.error(e);
+    alert("Не удалось сохранить лайк. Попробуйте ещё раз.");
+  }finally{
+    likeBtn.disabled = false;
+  }
+});
+
+(async()=>{
+  try{
+    await loadListing();
+  }catch(e){
+    loading.textContent = e.message;
+  }
 })();
 </script>
-</body></html>
+</body>
+</html>
