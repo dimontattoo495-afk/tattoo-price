@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Мои объявления — TATTOO PRICE</title>
+<link rel="stylesheet" href="./styles.css">
+<style>
+.owner-grid{display:grid;gap:14px;max-width:900px}
+.owner-card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px}
+.owner-head{display:flex;justify-content:space-between;gap:15px;align-items:flex-start}
+.owner-title{font-size:22px;font-weight:900;margin:4px 0 8px}
+.owner-meta{display:flex;gap:7px;flex-wrap:wrap}
+.owner-info{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:15px 0}
+.owner-info>div{border:1px solid var(--line);border-radius:11px;padding:10px}
+.owner-info small{display:block;color:#85858e;margin-bottom:4px}
+.owner-actions{display:flex;gap:8px;flex-wrap:wrap}
+.owner-note{max-width:800px;line-height:1.6}
+.good{color:#85dfa6}.warntext{color:#efca79}.bad{color:#ff8f96}
+@media(max-width:700px){
+ .owner-head{display:block}
+ .owner-info{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <a class="logo" href="./index.html">TATTOO <b>PRICE</b></a>
+  <nav class="nav">
+    <a href="./index.html">Работы</a>
+    <a href="./publish.html" class="primary">Разместить работу</a>
+  </nav>
+</header>
+
+<section class="pagehead">
+  <div class="eyebrow">КАБИНЕТ МАСТЕРА</div>
+  <h1>Мои объявления</h1>
+  <div class="muted owner-note">
+    Здесь показываются объявления, созданные в этом браузере.
+    Для доступа используется секретный ключ, который хранится только на вашем устройстве.
+  </div>
+</section>
+
+<div id="status" class="notice">Загружаем объявления…</div>
+<div id="list" class="owner-grid" style="margin-top:14px"></div>
+
+<footer class="footer">TATTOO PRICE</footer>
+</div>
+
+<script src="./supabase-config.js"></script>
+<script src="./tp-api-payments.js?v=3"></script>
+<script>
+const list = document.querySelector("#list");
+const statusBox = document.querySelector("#status");
+
+const statusNames = {
+  pending_payment:"Ожидает оплаты",
+  paid_review:"На модерации",
+  published:"Опубликовано",
+  hidden:"Скрыто",
+  expired:"Срок закончился",
+  rejected:"Отклонено",
+  draft:"Черновик"
+};
+
+const money = n =>
+  new Intl.NumberFormat("ru-RU").format(Number(n || 0)) + " ₽";
+
+const dateText = value => {
+  if(!value) return "—";
+  return new Date(value).toLocaleString("ru-RU", {
+    day:"2-digit", month:"2-digit", year:"numeric",
+    hour:"2-digit", minute:"2-digit"
+  });
+};
+
+function ownerItems(){
+  const rows = [];
+  for(let i=0;i<localStorage.length;i++){
+    const key = localStorage.key(i);
+    if(!key || !key.startsWith("tp_owner_")) continue;
+    const publicNo = key.slice("tp_owner_".length);
+    const ownerKey = localStorage.getItem(key);
+    if(publicNo && ownerKey) rows.push({publicNo, ownerKey});
+  }
+  return rows.sort((a,b)=>Number(b.publicNo)-Number(a.publicNo));
+}
+
+function actionHtml(x){
+  const no = Number(x.public_no);
+  const price = money(x.placement_price);
+
+  if(x.status === "published" && x.payment_status === "paid"){
+    return `
+      <a class="btn secondary" href="./listing.html?n=${no}">Открыть</a>
+      <button class="btn" onclick="pay(${no},'renewal')">
+        Продлить на 30 дней · ${price}
+      </button>`;
+  }
+
+  if(x.status === "expired" && x.payment_status === "paid"){
+    return `
+      <button class="btn" onclick="pay(${no},'renewal')">
+        Продлить и вернуть в каталог · ${price}
+      </button>`;
+  }
+
+  if(
+    x.status === "pending_payment" &&
+    ["unpaid","failed","pending"].includes(String(x.payment_status))
+  ){
+    return `
+      <button class="btn" onclick="pay(${no},'initial')">
+        Оплатить размещение · ${price}
+      </button>`;
+  }
+
+  if(x.status === "paid_review"){
+    return `<span class="muted">Оплата получена. Объявление ожидает модерации.</span>`;
+  }
+
+  if(x.status === "hidden"){
+    return `<span class="muted">Объявление скрыто администратором. Автопродление недоступно.</span>`;
+  }
+
+  if(x.status === "rejected"){
+    return `<span class="muted">Объявление отклонено. Автопродление недоступно.</span>`;
+  }
+
+  return "";
+}
+
+function card(x){
+  const days = x.days_left;
+  let term = "—";
+  let termClass = "";
+
+  if(x.status === "expired"){
+    term = "Истёк";
+    termClass = "bad";
+  }else if(x.expires_at){
+    term = `${dateText(x.expires_at)}${days !== null ? ` · ${days} дн.` : ""}`;
+    termClass = Number(days) <= 5 ? "warntext" : "good";
+  }
+
+  return `<article class="owner-card">
+    <div class="owner-head">
+      <div>
+        <div class="small">Объявление №${x.public_no}</div>
+        <div class="owner-title">${x.title || "Без названия"}</div>
+        <div class="owner-meta">
+          <span class="tag">${x.city || "—"}</span>
+          <span class="tag">${x.style || "—"}</span>
+          <span class="tag">${x.plan || "basic"}</span>
+          <span class="tag">${statusNames[x.status] || x.status}</span>
+        </div>
+      </div>
+      <div style="font-weight:900">${money(x.placement_price)}</div>
+    </div>
+
+    <div class="owner-info">
+      <div>
+        <small>Статус</small>
+        <b>${statusNames[x.status] || x.status}</b>
+      </div>
+      <div>
+        <small>Оплата</small>
+        <b>${x.payment_status === "paid" ? "Оплачено" : x.payment_status}</b>
+      </div>
+      <div>
+        <small>Действует до</small>
+        <b class="${termClass}">${term}</b>
+      </div>
+    </div>
+
+    <div class="owner-actions">${actionHtml(x)}</div>
+  </article>`;
+}
+
+let keysByNo = {};
+
+window.pay = async function(publicNo, mode){
+  const ownerKey = keysByNo[String(publicNo)];
+  if(!ownerKey) return;
+
+  statusBox.textContent =
+    mode === "renewal"
+      ? "Создаём платёж на продление…"
+      : "Создаём платёж…";
+
+  try{
+    const result = await TP.createTbankPayment(publicNo, ownerKey, mode);
+
+    if(result.already_paid && mode === "initial"){
+      statusBox.textContent = "Это объявление уже оплачено.";
+      await load();
+      return;
+    }
+
+    if(!result.payment_url){
+      throw new Error("Т-Банк не вернул ссылку на оплату");
+    }
+
+    location.href = result.payment_url;
+  }catch(e){
+    console.error(e);
+    statusBox.textContent = "Ошибка: " + e.message;
+  }
+};
+
+async function load(){
+  const items = ownerItems();
+
+  if(!items.length){
+    statusBox.textContent =
+      "В этом браузере пока нет созданных объявлений.";
+    list.innerHTML = `
+      <div class="panel">
+        <a class="btn" href="./publish.html">РАЗМЕСТИТЬ ПЕРВУЮ РАБОТУ</a>
+      </div>`;
+    return;
+  }
+
+  keysByNo = Object.fromEntries(items.map(x=>[String(x.publicNo),x.ownerKey]));
+
+  const results = [];
+
+  for(const item of items){
+    try{
+      const x = await TP.getOwnerStatus(item.publicNo, item.ownerKey);
+      if(x) results.push(x);
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  statusBox.textContent =
+    results.length
+      ? `Найдено объявлений: ${results.length}`
+      : "Не удалось загрузить объявления.";
+
+  list.innerHTML = results.map(card).join("");
+}
+
+load();
+</script>
+</body>
+</html>

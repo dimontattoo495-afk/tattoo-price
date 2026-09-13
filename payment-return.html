@@ -10,11 +10,14 @@
 <div class="wrap">
 <header class="top">
   <a class="logo" href="./index.html">TATTOO <b>PRICE</b></a>
-  <nav class="nav"><a href="./index.html">На главную</a></nav>
+  <nav class="nav">
+    <a href="./my.html">Мои объявления</a>
+    <a href="./index.html">На главную</a>
+  </nav>
 </header>
 
 <section class="pagehead">
-  <div class="eyebrow">T-БАНК · ОПЛАТА РАЗМЕЩЕНИЯ</div>
+  <div class="eyebrow">Т-БАНК · ОПЛАТА РАЗМЕЩЕНИЯ</div>
   <h1 id="heading">Проверяем оплату</h1>
   <div class="muted" id="message">Получаем подтверждение платежа…</div>
 </section>
@@ -23,7 +26,8 @@
   <div id="paymentState" class="notice">Подождите несколько секунд.</div>
 
   <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px">
-    <a class="btn" href="./index.html">НА ГЛАВНУЮ</a>
+    <a class="btn" href="./my.html">МОИ ОБЪЯВЛЕНИЯ</a>
+    <a class="btn secondary" href="./index.html">НА ГЛАВНУЮ</a>
     <a class="btn secondary" href="./publish.html">РАЗМЕСТИТЬ ЕЩЁ</a>
   </div>
 </section>
@@ -32,17 +36,26 @@
 </div>
 
 <script src="./supabase-config.js"></script>
-<script src="./tp-api-payments.js?v=2"></script>
+<script src="./tp-api-payments.js?v=3"></script>
 <script>
 const q = new URLSearchParams(location.search);
 const publicNo = q.get("n");
 const returnedStatus = q.get("status");
+const mode = q.get("mode") || "initial";
+const orderId = q.get("order");
+
 const state = document.querySelector("#paymentState");
 const heading = document.querySelector("#heading");
 const message = document.querySelector("#message");
 
 function sleep(ms){
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function dateText(value){
+  return value
+    ? new Date(value).toLocaleString("ru-RU")
+    : "";
 }
 
 async function check(){
@@ -53,43 +66,72 @@ async function check(){
     return;
   }
 
-  if(returnedStatus === "fail"){
-    heading.textContent = "Оплата не завершена";
-    message.textContent = "Платёж был отменён или завершился ошибкой.";
-  }
-
   const ownerKey = localStorage.getItem(`tp_owner_${publicNo}`);
 
   if(!ownerKey){
+    heading.textContent =
+      returnedStatus === "fail" ? "Оплата не завершена" : "Платёж обработан";
+    message.textContent = "";
     state.textContent =
-      "Возврат из банка выполнен. Для проверки статуса откройте эту страницу в том же браузере, в котором создавали объявление.";
+      "Откройте «Мои объявления» в том же браузере, в котором создавали публикацию.";
     return;
   }
 
-  for(let i=0;i<10;i++){
-    try{
-      const x = await TP.getOwnerStatus(publicNo, ownerKey);
+  if(returnedStatus === "fail"){
+    heading.textContent = "Оплата не прошла";
+    message.textContent =
+      mode === "renewal"
+        ? "Срок публикации не изменён. Можно попробовать продлить ещё раз."
+        : "Можно попробовать оплатить размещение снова.";
+  }
 
-      if(x?.payment_status === "paid"){
-        heading.textContent = "Оплата прошла";
-        message.textContent =
-          "Объявление оплачено и отправлено на модерацию.";
-        state.innerHTML =
-          `Объявление № <b>${x.public_no}</b> · статус: <b>на модерации</b>.`;
+  for(let i=0;i<12;i++){
+    try{
+      let p = null;
+
+      if(orderId){
+        p = await TP.getOwnerPaymentStatus(publicNo, ownerKey, orderId);
+      }
+
+      if(p?.payment_status === "succeeded"){
+        if(p.payment_kind === "renewal"){
+          heading.textContent = "Продление оплачено";
+          message.textContent = "Публикация продлена ещё на 30 дней.";
+          state.innerHTML =
+            `Объявление № <b>${p.public_no}</b> действует до <b>${dateText(p.expires_at)}</b>.`;
+        }else{
+          heading.textContent = "Оплата прошла";
+          message.textContent =
+            "Объявление оплачено и отправлено на модерацию.";
+          state.innerHTML =
+            `Объявление № <b>${p.public_no}</b> · статус: <b>на модерации</b>.`;
+        }
         return;
       }
 
-      if(x?.payment_status === "failed"){
+      if(["failed","canceled","refunded"].includes(String(p?.payment_status))){
         heading.textContent = "Оплата не прошла";
         message.textContent =
-          "Можно вернуться к размещению и попробовать оплатить снова.";
-        state.textContent =
-          `Объявление №${x.public_no} пока не оплачено.`;
+          mode === "renewal"
+            ? "Текущий срок публикации не изменён."
+            : "Объявление пока не оплачено.";
+        state.textContent = `Объявление №${publicNo}.`;
         return;
+      }
+
+      // Fallback for older return URLs without order id.
+      if(!orderId){
+        const x = await TP.getOwnerStatus(publicNo, ownerKey);
+        if(mode === "initial" && x?.payment_status === "paid"){
+          heading.textContent = "Оплата прошла";
+          message.textContent = "Объявление оплачено.";
+          state.textContent = `Объявление №${x.public_no}.`;
+          return;
+        }
       }
 
       state.textContent =
-        `Платёж принят банком, ждём подтверждение… попытка ${i+1}/10`;
+        `Ждём подтверждение от банка… попытка ${i+1}/12`;
     }catch(e){
       console.error(e);
     }
@@ -101,7 +143,7 @@ async function check(){
   message.textContent =
     "Подтверждение может прийти с небольшой задержкой.";
   state.textContent =
-    "Не создавайте новое объявление. Статус обновится после уведомления Т-Банка.";
+    "Не создавайте повторный платёж сразу. Проверьте статус в разделе «Мои объявления».";
 }
 
 check();

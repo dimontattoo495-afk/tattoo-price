@@ -120,7 +120,7 @@
     });
   }
 
-  async function createTbankPayment(publicNo, ownerKey){
+  async function createTbankPayment(publicNo, ownerKey, mode="initial"){
     const r = await fetch(C.tbankCreatePaymentFunction, {
       method: "POST",
       headers: {
@@ -129,7 +129,8 @@
       },
       body: JSON.stringify({
         public_no: Number(publicNo),
-        owner_key: ownerKey
+        owner_key: ownerKey,
+        mode
       })
     });
 
@@ -147,6 +148,15 @@
     return data;
   }
 
+
+  async function getOwnerPaymentStatus(publicNo, ownerKey, orderId){
+    return rpc("tp_get_owner_payment_status", {
+      p_public_no: Number(publicNo),
+      p_owner_key: ownerKey,
+      p_order_id: orderId
+    });
+  }
+
   window.TP = {
     rpc,
     photoUrl,
@@ -157,6 +167,7 @@
     createListing,
     getVisitorToken,
     getOwnerStatus,
+    getOwnerPaymentStatus,
     createTbankPayment
   };
 })();
