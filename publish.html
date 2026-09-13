@@ -59,14 +59,34 @@
    </div>
    <div class="hint" style="margin-top:10px">После создания объявления откроется защищённая страница оплаты Т-Банка.</div>
    <div class="total"><span>К оплате</span><span id="total">199 ₽</span></div>
-   <label class="check"><input required type="checkbox"><span>Подтверждаю, что имею право публиковать эти изображения и данные.</span></label>
+   <label class="check">
+    <input required type="checkbox">
+    <span>Подтверждаю право на публикацию фотографий, текстов и контактов и принимаю условия <a href="./consent-public.html" target="_blank">публичного размещения данных</a>.</span>
+   </label>
+   <label class="check">
+    <input required type="checkbox">
+    <span>Даю <a href="./consent.html" target="_blank">согласие на обработку персональных данных</a> и ознакомлен с <a href="./privacy.html" target="_blank">Политикой конфиденциальности</a>.</span>
+   </label>
+   <label class="check">
+    <input required type="checkbox">
+    <span>Принимаю <a href="./offer.html" target="_blank">Публичную оферту</a> и <a href="./rules.html" target="_blank">Правила размещения</a>.</span>
+   </label>
    <button class="btn full" id="submitBtn" type="submit">ПЕРЕЙТИ К ОПЛАТЕ</button>
    <div class="notice" id="status" style="margin-top:12px">Объявление получит статус «ожидает оплаты» и пока не попадёт в публичную ленту.</div>
   </section>
  </aside>
 </form>
 
-<footer class="footer">TATTOO PRICE</footer>
+<footer class="footer">
+  <div>TATTOO PRICE © 2026</div>
+
+  <a href="./about.html">О сервисе</a>
+  <a href="./rules.html">Правила размещения</a>
+  <a href="./payment.html">Оплата и возврат</a>
+  <a href="./offer.html">Публичная оферта</a>
+  <a href="./privacy.html">Политика конфиденциальности</a>
+  <a href="./contacts.html">Контакты и реквизиты</a>
+</footer>
 </div>
 <script src="./supabase-config.js"></script>
 <script src="./tp-api-payments.js?v=3"></script>

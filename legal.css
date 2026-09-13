@@ -1,0 +1,36 @@
+
+.how-section{margin:12px 0 44px}
+.how-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.how-card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px}
+.how-card h3{margin:8px 0 8px;font-size:19px}
+.how-card p{margin:0;color:#aaaab3;line-height:1.55;font-size:14px}
+.how-num{font-size:12px;letter-spacing:.12em;font-weight:900;color:var(--red2)}
+.service-note{margin-top:14px;padding:15px 17px;border-radius:14px;border:1px solid #493236;background:#171214;color:#bdbdc5;line-height:1.55}
+
+.legal-shell{max-width:900px;margin:0 auto}
+.legal-card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:26px;margin:16px 0}
+.legal-card h1{font-size:42px;line-height:1.05;margin:7px 0 12px;letter-spacing:-.045em}
+.legal-card h2{font-size:23px;margin:28px 0 10px}
+.legal-card h3{font-size:17px;margin:22px 0 8px}
+.legal-card p,.legal-card li{color:#c1c1c9;line-height:1.7}
+.legal-card ul,.legal-card ol{padding-left:22px}
+.legal-card a{color:#ff8c96}
+.legal-meta{color:#81818c;font-size:12px;margin-bottom:18px}
+.legal-box{border:1px solid var(--line);border-radius:14px;padding:15px 16px;background:#101013;margin:14px 0}
+.legal-warning{border-color:#6b4a24;background:#1a1610;color:#efc978}
+.legal-requisites{display:grid;grid-template-columns:180px 1fr;gap:8px 14px}
+.legal-requisites div:nth-child(odd){color:#81818c}
+.footer{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.footer>div{margin-right:4px}
+.check a{color:#ff9aa3}
+
+@media(max-width:900px){
+ .how-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
+ .how-grid{grid-template-columns:1fr}
+ .legal-card{padding:18px}
+ .legal-card h1{font-size:34px}
+ .legal-requisites{grid-template-columns:1fr}
+ .legal-requisites div:nth-child(odd){margin-top:8px}
+}
