@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TATTOO PRICE — работы и цены тату-мастеров</title>
+<meta name="description" content="Работы тату-мастеров, цены, города и прямые контакты.">
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <a class="logo" href="./index.html">TATTOO <b>PRICE</b></a>
+  <nav class="nav"><a href="#works">Работы</a><a href="./publish.html" class="primary">Разместить работу</a></nav>
+</header>
+
+<section class="hero">
+  <div>
+    <div class="eyebrow">ТАТУ-МАСТЕРА · РАБОТЫ · ЦЕНЫ</div>
+    <h1>НАЙДИ МАСТЕРА ПО РАБОТЕ, А НЕ ПО РЕКЛАМЕ.</h1>
+    <p>Живые работы тату-мастеров из разных городов. Смотри стиль, ориентир по цене и переходи напрямую в соцсети мастера.</p>
+  </div>
+  <div class="herobox">
+    <div class="muted">Работ опубликовано</div>
+    <div class="bigstat">1 284</div>
+    <div class="muted">от 312 мастеров · 47 городов</div>
+  </div>
+</section>
+
+<section id="works">
+<div class="filters">
+  <input class="input" id="search" placeholder="Поиск: волк, рукав, реализм…">
+  <select class="select" id="city"><option value="">Все города</option><option>Москва</option><option>Санкт-Петербург</option><option>Казань</option></select>
+  <select class="select" id="style"><option value="">Все стили</option><option>Реализм</option><option>Old School</option><option>Графика</option><option>Орнаментал</option></select>
+  <select class="select" id="price"><option value="">Любая цена</option><option value="15">до 15 000 ₽</option><option value="25">до 25 000 ₽</option><option value="40">до 40 000 ₽</option></select>
+</div>
+
+<div class="section-title"><h2>Свежие работы</h2><div class="muted" id="count">6 объявлений</div></div>
+<div class="grid" id="cards"></div>
+</section>
+
+<div class="callout">
+  <div><h3>Ты тату-мастер?</h3><div class="muted">Покажи работу, укажи цену и получай клиентов напрямую в Telegram или VK.</div></div>
+  <a class="btn" href="./publish.html">РАЗМЕСТИТЬ РАБОТУ</a>
+</div>
+
+<footer class="footer">
+  <div>TATTOO PRICE · прототип отдельного проекта</div>
+  <a href="#">О сервисе</a><a href="#">Правила размещения</a><a href="#">Оплата</a><a href="#">Контакты</a>
+</footer>
+</div>
+<script src="./app.js"></script>
+</body></html>

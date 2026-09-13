@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+<defs>
+ <radialGradient id="g2" cx="50%" cy="45%" r="70%"><stop offset="0" stop-color="#303038"/><stop offset="1" stop-color="#0d0d10"/></radialGradient>
+ <filter id="s2"><feGaussianBlur stdDeviation="2"/></filter>
+</defs>
+<rect width="800" height="600" fill="url(#g2)"/>
+<circle cx="378" cy="271" r="153" fill="none" stroke="#ef3f4f" stroke-width="7" opacity=".7"/>
+<path d="M170 396 C260 178, 530 176, 635 390" fill="none" stroke="#d8d8df" stroke-width="8" stroke-linecap="round" opacity=".78"/>
+<path d="M250 390 C320 300 350 190 410 160 C470 210 495 325 570 390" fill="none" stroke="#90909a" stroke-width="4" opacity=".5"/>
+<path d="M300 270 L400 145 L500 270 L455 430 L345 430 Z" fill="none" stroke="#f0f0f2" stroke-width="5" opacity=".35"/>
+<text x="50%" y="88%" text-anchor="middle" fill="#8f8f99" font-size="28" font-family="Arial" letter-spacing="5">ТАТУ РАБОТА 2</text>
+</svg>

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Работа мастера — TATTOO PRICE</title><link rel="stylesheet" href="./styles.css"></head>
+<body>
+<div class="wrap">
+<header class="top"><a class="logo" href="./index.html">TATTOO <b>PRICE</b></a><nav class="nav"><a href="./index.html">Все работы</a><a class="primary" href="./publish.html">Разместить работу</a></nav></header>
+<div class="pagehead"><div class="eyebrow">МОСКВА · РЕАЛИЗМ</div><div class="muted">Пример страницы объявления</div></div>
+<div class="detail">
+ <div>
+  <img id="main" class="gallery-main" src="./assets/work1.svg">
+  <div class="thumbs">
+   <img src="./assets/work1.svg"><img src="./assets/work2.svg"><img src="./assets/work3.svg"><img src="./assets/work4.svg"><img src="./assets/work5.svg">
+  </div>
+  <section class="panel" style="margin-top:16px">
+   <h2>О работе</h2>
+   <p class="muted" style="line-height:1.7">Черно-серый реализм. Свободное окно на большую работу. Индивидуальная адаптация эскиза под анатомию входит в стоимость. Ориентировочная длительность одного сеанса — 6–8 часов.</p>
+  </section>
+ </div>
+ <aside>
+  <div class="sidecard">
+   <div class="tags"><span class="tag">Москва</span><span class="tag">Реализм</span><span class="tag hot">TOP</span></div>
+   <h1>Черно-серый реализм · полный день</h1>
+   <div class="price">от 20 000 ₽</div>
+   <div class="muted">Мастер</div><div style="font-size:20px;font-weight:900;margin-top:3px">Дмитрий А.</div>
+   <div class="meta-list">
+    <div class="meta-item"><span>Формат цены</span><span>за сеанс</span></div>
+    <div class="meta-item"><span>Город</span><span>Москва</span></div>
+    <div class="meta-item"><span>Стиль</span><span>Реализм</span></div>
+    <div class="meta-item"><span>Опубликовано</span><span>сегодня</span></div>
+   </div>
+   <div class="muted" style="font-size:12px;line-height:1.45">Оплата татуировки происходит напрямую мастеру. Сайт продаёт только размещение объявления.</div>
+   <div class="socials">
+    <a class="btn" href="#" onclick="event.preventDefault();alert('Здесь будет Telegram мастера')">Telegram</a>
+    <a class="btn secondary" href="#" onclick="event.preventDefault();alert('Здесь будет VK мастера')">VK</a>
+   </div>
+  </div>
+ </aside>
+</div>
+<footer class="footer">TATTOO PRICE · прототип</footer>
+</div>
+<script>
+document.querySelectorAll(".thumbs img").forEach(img=>img.onclick=()=>document.querySelector("#main").src=img.src);
+</script>
+</body></html>
