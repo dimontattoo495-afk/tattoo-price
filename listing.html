@@ -173,7 +173,12 @@ async function loadListing(){
   document.querySelector("#tags").innerHTML =
     `<span class="tag">${esc(x.city)}</span>` +
     `<span class="tag">${esc(x.style)}</span>` +
+    (x.plan === "highlight" ? '<span class="tag featured">ВЫДЕЛЕНО</span>' : "") +
     (x.plan === "top" ? '<span class="tag hot">TOP</span>' : "");
+
+  const sidecard = document.querySelector(".sidecard");
+  sidecard.classList.toggle("highlight-plan", x.plan === "highlight");
+  sidecard.classList.toggle("top-plan", x.plan === "top");
 
   const photos = Array.isArray(x.photos) ? x.photos : [];
 

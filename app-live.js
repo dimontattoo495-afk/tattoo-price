@@ -37,7 +37,12 @@ function card(x){
     ? "#"
     : `./listing.html?n=${encodeURIComponent(x.public_no)}`;
 
-  return `<article class="card ${x.plan==="top" ? "top-card" : ""}">
+  const planClass =
+    x.plan === "top"
+      ? "top-card"
+      : (x.plan === "highlight" ? "highlight-card" : "");
+
+  return `<article class="card ${planClass}">
     <a href="${href}" ${x.isDemo?'onclick="event.preventDefault()"':''}>
       <img class="cover" src="${img}" alt="" loading="lazy">
     </a>
@@ -46,6 +51,7 @@ function card(x){
       <div class="tags">
         <span class="tag">${esc(x.city)}</span>
         <span class="tag">${esc(x.style)}</span>
+        ${x.plan==="highlight"?'<span class="tag featured">ВЫДЕЛЕНО</span>':""}
         ${x.plan==="top"?'<span class="tag hot">TOP</span>':""}
         ${x.isDemo?'<span class="tag">ДЕМО</span>':""}
       </div>

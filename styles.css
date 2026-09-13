@@ -163,3 +163,75 @@ button:disabled{opacity:.6;cursor:not-allowed}
   cursor:wait;
   transform:none;
 }
+
+/* TATTOO PRICE — tariff visual hierarchy */
+.card{
+  position:relative;
+}
+
+.highlight-card{
+  border-color:#8d4a54;
+  box-shadow:0 18px 46px rgba(239,63,79,.10);
+  background:
+    linear-gradient(180deg, rgba(239,63,79,.055), rgba(239,63,79,0) 34%),
+    var(--panel);
+}
+
+.highlight-card::before{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:0;
+  height:3px;
+  background:linear-gradient(90deg,#ef3f4f,#ff8590);
+  z-index:2;
+}
+
+.highlight-card:hover{
+  border-color:#ba5965;
+  box-shadow:0 22px 56px rgba(239,63,79,.16);
+}
+
+.tag.featured{
+  border-color:#8d4a54;
+  background:#29161a;
+  color:#ff9ba5;
+  font-weight:900;
+  letter-spacing:.03em;
+}
+
+.top-card{
+  border-color:#b34451;
+  box-shadow:0 20px 58px rgba(239,63,79,.16);
+  background:
+    linear-gradient(180deg, rgba(239,63,79,.09), rgba(239,63,79,0) 42%),
+    var(--panel);
+}
+
+.top-card::before{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:0;
+  height:4px;
+  background:linear-gradient(90deg,#ff3348,#ff7b87,#ff3348);
+  z-index:2;
+}
+
+.sidecard.highlight-plan{
+  border-color:#8d4a54;
+  box-shadow:0 22px 58px rgba(239,63,79,.10);
+  background:
+    linear-gradient(180deg, rgba(239,63,79,.055), rgba(239,63,79,0) 36%),
+    var(--panel);
+}
+
+.sidecard.top-plan{
+  border-color:#b34451;
+  box-shadow:0 24px 64px rgba(239,63,79,.16);
+  background:
+    linear-gradient(180deg, rgba(239,63,79,.09), rgba(239,63,79,0) 40%),
+    var(--panel);
+}
