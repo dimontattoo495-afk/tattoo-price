@@ -9,7 +9,17 @@ let all = [];
 const esc = s => String(s ?? "").replace(/[&<>"']/g, m => ({
   "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
 }[m]));
-const money = n => n == null ? "Цена по договорённости" : new Intl.NumberFormat("ru-RU").format(n)+" ₽";
+const money = n => n == null ? "" : new Intl.NumberFormat("ru-RU").format(n)+" ₽";
+function priceText(x){
+  if(x.price_type === "negotiable" || x.work_price == null) return "Цена по договорённости";
+  const m = money(x.work_price);
+  return {
+    from: "от " + m,
+    fixed: m,
+    session: m + " за сеанс",
+    hour: m + " за час"
+  }[x.price_type] || "от " + m;
+}
 
 function card(x){
   const img = x.isDemo ? x.img : (TP.photoUrl(x.cover_path) || "./assets/work1.svg");
@@ -26,7 +36,7 @@ function card(x){
         ${x.isDemo?'<span class="tag">ДЕМО</span>':""}
       </div>
       <div class="title">${esc(x.title)}</div>
-      <div class="price">${x.work_price == null ? money(null) : "от "+money(x.work_price)}</div>
+      <div class="price">${priceText(x)}</div>
       <div class="desc">${esc(x.description || "")}</div>
       <div class="master">
         <strong>${esc(x.master_name)}</strong>

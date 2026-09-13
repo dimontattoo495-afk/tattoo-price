@@ -34,7 +34,12 @@
 const n=new URLSearchParams(location.search).get("n");
 const loading=document.querySelector("#loading"), detail=document.querySelector("#detail");
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
-const money=x=>x==null?"Цена по договорённости":new Intl.NumberFormat("ru-RU").format(x)+" ₽";
+const money=x=>x==null?"":new Intl.NumberFormat("ru-RU").format(x)+" ₽";
+function priceText(x){
+  if(x.price_type==="negotiable" || x.work_price==null) return "Цена по договорённости";
+  const m=money(x.work_price);
+  return {from:"от "+m,fixed:m,session:m+" за сеанс",hour:m+" за час"}[x.price_type] || "от "+m;
+}
 (async()=>{
  try{
   if(!n) throw new Error("Не указан номер объявления");
@@ -48,7 +53,7 @@ const money=x=>x==null?"Цена по договорённости":new Intl.Num
   document.querySelector("#city").textContent=x.city||"";
   document.querySelector("#style").textContent=x.style||"";
   document.querySelector("#views").textContent=x.views||0;
-  document.querySelector("#price").textContent=x.work_price==null?money(null):"от "+money(x.work_price);
+  document.querySelector("#price").textContent=priceText(x);
   document.querySelector("#tags").innerHTML=`<span class="tag">${esc(x.city)}</span><span class="tag">${esc(x.style)}</span>${x.plan==="top"?'<span class="tag hot">TOP</span>':""}`;
   const photos=Array.isArray(x.photos)?x.photos:[];
   if(photos.length){
