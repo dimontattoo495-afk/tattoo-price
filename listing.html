@@ -66,6 +66,10 @@
         <span class="like-count" id="likeCount">0</span>
       </button>
 
+      <button class="btn secondary" id="shareBtn" type="button" style="width:100%;margin-top:8px">
+        ↗ Поделиться
+      </button>
+
       <div class="muted" style="font-size:12px;line-height:1.45;margin-top:13px">
         Оплата татуировки происходит напрямую мастеру.
         Сайт продаёт только размещение объявления.
@@ -86,6 +90,8 @@ const n = new URLSearchParams(location.search).get("n");
 const loading = document.querySelector("#loading");
 const detail = document.querySelector("#detail");
 const likeBtn = document.querySelector("#likeBtn");
+const shareBtn = document.querySelector("#shareBtn");
+let currentListing = null;
 
 let currentLiked = false;
 
@@ -140,6 +146,7 @@ async function loadListing(){
     throw new Error("Объявление не найдено или ещё не опубликовано");
   }
 
+  currentListing = x;
   document.title = (x.title || "Работа") + " — TATTOO PRICE";
   document.querySelector("#eyebrow").textContent =
     `${x.city || ""} · ${x.style || ""}`;
@@ -200,6 +207,58 @@ async function loadListing(){
   loading.hidden = true;
   detail.hidden = false;
 }
+
+
+shareBtn.addEventListener("click", async () => {
+  if(!n) return;
+
+  const url = new URL(location.href);
+  url.search = `?n=${encodeURIComponent(n)}`;
+
+  const title = currentListing?.title || "Работа тату-мастера";
+  const master = currentListing?.master_name || "";
+  const city = currentListing?.city || "";
+  const text = [title, master, city].filter(Boolean).join(" · ");
+
+  const original = shareBtn.textContent;
+
+  try{
+    if(navigator.share){
+      await navigator.share({
+        title: `${title} — TATTOO PRICE`,
+        text,
+        url: url.toString()
+      });
+      return;
+    }
+
+    await navigator.clipboard.writeText(url.toString());
+    shareBtn.textContent = "✓ Ссылка скопирована";
+  }catch(e){
+    if(e?.name === "AbortError") return;
+
+    try{
+      const temp = document.createElement("textarea");
+      temp.value = url.toString();
+      temp.style.position = "fixed";
+      temp.style.opacity = "0";
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand("copy");
+      temp.remove();
+      shareBtn.textContent = "✓ Ссылка скопирована";
+    }catch(err){
+      console.error(err);
+      shareBtn.textContent = "Не удалось скопировать";
+    }
+  }finally{
+    if(shareBtn.textContent !== original){
+      setTimeout(() => {
+        shareBtn.textContent = original;
+      }, 1800);
+    }
+  }
+});
 
 likeBtn.addEventListener("click", async () => {
   if(!n || likeBtn.disabled) return;
