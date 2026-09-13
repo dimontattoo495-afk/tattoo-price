@@ -4,41 +4,66 @@
 <body>
 <div class="wrap">
 <header class="top"><a class="logo" href="./index.html">TATTOO <b>PRICE</b></a><nav class="nav"><a href="./index.html">Все работы</a><a class="primary" href="./publish.html">Разместить работу</a></nav></header>
-<div class="pagehead"><div class="eyebrow">МОСКВА · РЕАЛИЗМ</div><div class="muted">Пример страницы объявления</div></div>
-<div class="detail">
+<div class="pagehead"><div class="eyebrow" id="eyebrow">TATTOO PRICE</div><div class="muted">Публичная страница объявления</div></div>
+<div id="loading" class="panel">Загружаем объявление…</div>
+<div class="detail" id="detail" hidden>
  <div>
   <img id="main" class="gallery-main" src="./assets/work1.svg">
-  <div class="thumbs">
-   <img src="./assets/work1.svg"><img src="./assets/work2.svg"><img src="./assets/work3.svg"><img src="./assets/work4.svg"><img src="./assets/work5.svg">
-  </div>
-  <section class="panel" style="margin-top:16px">
-   <h2>О работе</h2>
-   <p class="muted" style="line-height:1.7">Черно-серый реализм. Свободное окно на большую работу. Индивидуальная адаптация эскиза под анатомию входит в стоимость. Ориентировочная длительность одного сеанса — 6–8 часов.</p>
-  </section>
+  <div class="thumbs" id="thumbs"></div>
+  <section class="panel" style="margin-top:16px"><h2>О работе</h2><p class="muted" id="description" style="line-height:1.7"></p></section>
  </div>
- <aside>
-  <div class="sidecard">
-   <div class="tags"><span class="tag">Москва</span><span class="tag">Реализм</span><span class="tag hot">TOP</span></div>
-   <h1>Черно-серый реализм · полный день</h1>
-   <div class="price">от 20 000 ₽</div>
-   <div class="muted">Мастер</div><div style="font-size:20px;font-weight:900;margin-top:3px">Дмитрий А.</div>
-   <div class="meta-list">
-    <div class="meta-item"><span>Формат цены</span><span>за сеанс</span></div>
-    <div class="meta-item"><span>Город</span><span>Москва</span></div>
-    <div class="meta-item"><span>Стиль</span><span>Реализм</span></div>
-    <div class="meta-item"><span>Опубликовано</span><span>сегодня</span></div>
-   </div>
-   <div class="muted" style="font-size:12px;line-height:1.45">Оплата татуировки происходит напрямую мастеру. Сайт продаёт только размещение объявления.</div>
-   <div class="socials">
-    <a class="btn" href="#" onclick="event.preventDefault();alert('Здесь будет Telegram мастера')">Telegram</a>
-    <a class="btn secondary" href="#" onclick="event.preventDefault();alert('Здесь будет VK мастера')">VK</a>
-   </div>
+ <aside><div class="sidecard">
+  <div class="tags" id="tags"></div>
+  <h1 id="title"></h1>
+  <div class="price" id="price"></div>
+  <div class="muted">Мастер</div><div style="font-size:20px;font-weight:900;margin-top:3px" id="master"></div>
+  <div class="meta-list">
+   <div class="meta-item"><span>Город</span><span id="city"></span></div>
+   <div class="meta-item"><span>Стиль</span><span id="style"></span></div>
+   <div class="meta-item"><span>Просмотров</span><span id="views"></span></div>
   </div>
- </aside>
+  <div class="muted" style="font-size:12px;line-height:1.45">Оплата татуировки происходит напрямую мастеру. Сайт продаёт только размещение объявления.</div>
+  <div class="socials" id="socials"></div>
+ </div></aside>
 </div>
-<footer class="footer">TATTOO PRICE · прототип</footer>
+<footer class="footer">TATTOO PRICE</footer>
 </div>
+<script src="./supabase-config.js"></script>
+<script src="./tp-api.js"></script>
 <script>
-document.querySelectorAll(".thumbs img").forEach(img=>img.onclick=()=>document.querySelector("#main").src=img.src);
+const n=new URLSearchParams(location.search).get("n");
+const loading=document.querySelector("#loading"), detail=document.querySelector("#detail");
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+const money=x=>x==null?"Цена по договорённости":new Intl.NumberFormat("ru-RU").format(x)+" ₽";
+(async()=>{
+ try{
+  if(!n) throw new Error("Не указан номер объявления");
+  const x=await TP.getListing(n);
+  if(!x) throw new Error("Объявление не найдено или ещё не опубликовано");
+  document.title=(x.title||"Работа")+" — TATTOO PRICE";
+  document.querySelector("#eyebrow").textContent=`${x.city||""} · ${x.style||""}`;
+  document.querySelector("#title").textContent=x.title||"";
+  document.querySelector("#description").textContent=x.description||"";
+  document.querySelector("#master").textContent=x.master_name||"";
+  document.querySelector("#city").textContent=x.city||"";
+  document.querySelector("#style").textContent=x.style||"";
+  document.querySelector("#views").textContent=x.views||0;
+  document.querySelector("#price").textContent=x.work_price==null?money(null):"от "+money(x.work_price);
+  document.querySelector("#tags").innerHTML=`<span class="tag">${esc(x.city)}</span><span class="tag">${esc(x.style)}</span>${x.plan==="top"?'<span class="tag hot">TOP</span>':""}`;
+  const photos=Array.isArray(x.photos)?x.photos:[];
+  if(photos.length){
+   const main=document.querySelector("#main");
+   main.src=TP.photoUrl(photos[0].storage_path);
+   document.querySelector("#thumbs").innerHTML=photos.map(p=>`<img src="${TP.photoUrl(p.storage_path)}" loading="lazy">`).join("");
+   document.querySelectorAll("#thumbs img").forEach(img=>img.onclick=()=>main.src=img.src);
+  }
+  const social=[];
+  if(x.telegram_url) social.push(`<a class="btn" target="_blank" rel="noopener" href="${esc(x.telegram_url)}">Telegram</a>`);
+  if(x.vk_url) social.push(`<a class="btn secondary" target="_blank" rel="noopener" href="${esc(x.vk_url)}">VK</a>`);
+  if(x.website_url) social.push(`<a class="btn secondary" target="_blank" rel="noopener" href="${esc(x.website_url)}">Сайт</a>`);
+  document.querySelector("#socials").innerHTML=social.join("");
+  loading.hidden=true; detail.hidden=false;
+ }catch(e){ loading.textContent=e.message; }
+})();
 </script>
 </body></html>

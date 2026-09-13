@@ -15,34 +15,37 @@
   <section class="panel">
    <h2>1. Фотографии</h2>
    <div class="uploadbox">
-    <input type="file" id="photos" accept="image/*" multiple>
-    <label for="photos"><strong>Выбрать до 5 фотографий</strong><div class="hint">На реальном сайте фото будут автоматически уменьшаться до 1600 px и сжиматься перед отправкой в хранилище.</div></label>
+    <input type="file" id="photos" accept="image/jpeg,image/png,image/webp" multiple required>
+    <label for="photos"><strong>Выбрать 1–5 фотографий</strong><div class="hint">Фото автоматически уменьшаются до 1600 px и сжимаются в WebP.</div></label>
    </div>
    <div class="previews" id="previews"></div>
-   <div class="hint" id="compressInfo">Сжатие выполняется только в браузере для демонстрации. Ничего никуда не загружается.</div>
+   <div class="hint" id="compressInfo">Фотографии не выбраны.</div>
   </section>
 
   <section class="panel" style="margin-top:16px">
    <h2>2. Работа и мастер</h2>
    <div class="row2">
-    <div class="field"><label>ИМЯ / ПСЕВДОНИМ МАСТЕРА</label><input class="input" required placeholder="Дмитрий Акишин"></div>
-    <div class="field"><label>ГОРОД</label><input class="input" required placeholder="Москва"></div>
+    <div class="field"><label>ИМЯ / ПСЕВДОНИМ МАСТЕРА</label><input class="input" name="master_name" required maxlength="80" placeholder="Дмитрий Акишин"></div>
+    <div class="field"><label>ГОРОД</label><input class="input" name="city" required maxlength="80" placeholder="Москва"></div>
    </div>
    <div class="row2">
-    <div class="field"><label>СТИЛЬ</label><select class="select" required><option>Реализм</option><option>Old School</option><option>Графика</option><option>Орнаментал</option><option>Другое</option></select></div>
-    <div class="field"><label>ЦЕНА ЗА РАБОТУ / СЕАНС, ₽</label><input class="input" type="number" min="0" placeholder="20000"></div>
+    <div class="field"><label>СТИЛЬ</label><select class="select" name="style" required><option>Реализм</option><option>Old School</option><option>Графика</option><option>Орнаментал</option><option>Другое</option></select></div>
+    <div class="field"><label>ЦЕНА, ₽</label><input class="input" name="work_price" type="number" min="0" max="10000000" placeholder="20000"></div>
    </div>
-   <div class="field"><label>ЗАГОЛОВОК</label><input class="input" maxlength="80" placeholder="Черно-серый реализм · полный день"></div>
-   <div class="field"><label>КОРОТКОЕ ОПИСАНИЕ</label><textarea rows="5" maxlength="600" placeholder="Размер, длительность, что входит в цену, свободен ли эскиз..."></textarea></div>
+   <div class="field"><label>КАК УКАЗАТЬ ЦЕНУ</label><select class="select" name="price_type"><option value="from">от указанной суммы</option><option value="fixed">фиксированная</option><option value="session">за сеанс</option><option value="hour">за час</option><option value="negotiable">по договорённости</option></select></div>
+   <div class="field"><label>ЗАГОЛОВОК</label><input class="input" name="title" required maxlength="100" placeholder="Черно-серый реализм · полный день"></div>
+   <div class="field"><label>КОРОТКОЕ ОПИСАНИЕ</label><textarea name="description" rows="5" maxlength="1000" placeholder="Размер, длительность, что входит в цену, свободен ли эскиз..."></textarea></div>
   </section>
 
   <section class="panel" style="margin-top:16px">
    <h2>3. Контакты</h2>
+   <div class="field"><label>НАЗВАНИЕ СТУДИИ (НЕОБЯЗАТЕЛЬНО)</label><input class="input" name="studio_name" maxlength="100" placeholder="Smoke Tattoo"></div>
    <div class="row2">
-    <div class="field"><label>TELEGRAM</label><input class="input" placeholder="https://t.me/..."></div>
-    <div class="field"><label>VK</label><input class="input" placeholder="https://vk.com/..."></div>
+    <div class="field"><label>TELEGRAM</label><input class="input" name="telegram_url" placeholder="https://t.me/..."></div>
+    <div class="field"><label>VK</label><input class="input" name="vk_url" placeholder="https://vk.com/..."></div>
    </div>
-   <div class="field"><label>ДРУГАЯ ССЫЛКА / САЙТ</label><input class="input" placeholder="https://..."></div>
+   <div class="field"><label>ДРУГАЯ ССЫЛКА / САЙТ</label><input class="input" name="website_url" placeholder="https://..."></div>
+   <div class="hint">Укажи хотя бы один контакт: Telegram, VK или сайт.</div>
   </section>
  </div>
 
@@ -50,50 +53,22 @@
   <section class="panel summary">
    <h2>4. Тариф публикации</h2>
    <div class="tariffs">
-    <label class="tariff"><div class="tariff-top"><span><input type="radio" name="tariff" value="199" checked>Стандарт</span><span>199 ₽</span></div><small>30 дней в общей ленте.</small></label>
-    <label class="tariff"><div class="tariff-top"><span><input type="radio" name="tariff" value="399">Выделенная</span><span>399 ₽</span></div><small>30 дней + заметное выделение карточки.</small></label>
-    <label class="tariff"><div class="tariff-top"><span><input type="radio" name="tariff" value="699">TOP</span><span>699 ₽</span></div><small>30 дней + TOP-бейдж + приоритет в выдаче.</small></label>
+    <label class="tariff"><div class="tariff-top"><span><input type="radio" name="plan" value="basic" checked>Стандарт</span><span>199 ₽</span></div><small>30 дней в общей ленте.</small></label>
+    <label class="tariff"><div class="tariff-top"><span><input type="radio" name="plan" value="highlight">Выделенная</span><span>399 ₽</span></div><small>30 дней + заметное выделение.</small></label>
+    <label class="tariff"><div class="tariff-top"><span><input type="radio" name="plan" value="top">TOP</span><span>699 ₽</span></div><small>30 дней + TOP + приоритет.</small></label>
    </div>
-   <div class="hint" style="margin-top:10px">Цены пока демонстрационные — их поменяем после обсуждения.</div>
-   <div class="total"><span>К оплате</span><span id="total">199 ₽</span></div>
-   <label class="check"><input required type="checkbox"><span>Подтверждаю, что имею право публиковать эти изображения и указанные данные.</span></label>
-   <button class="btn full" type="submit">ПЕРЕЙТИ К ОПЛАТЕ</button>
-   <div class="notice" style="margin-top:12px">В прототипе оплата отключена. Позже эта кнопка будет создавать платёж через Т‑Банк и отправлять объявление на модерацию.</div>
+   <div class="hint" style="margin-top:10px">Платёж пока не подключён. Проверяем создание объявления и загрузку фото.</div>
+   <div class="total"><span>Будущий тариф</span><span id="total">199 ₽</span></div>
+   <label class="check"><input required type="checkbox"><span>Подтверждаю, что имею право публиковать эти изображения и данные.</span></label>
+   <button class="btn full" id="submitBtn" type="submit">СОЗДАТЬ ОБЪЯВЛЕНИЕ</button>
+   <div class="notice" id="status" style="margin-top:12px">Объявление получит статус «ожидает оплаты» и пока не попадёт в публичную ленту.</div>
   </section>
  </aside>
 </form>
 
 <footer class="footer">TATTOO PRICE · прототип</footer>
 </div>
-<script>
-const photos=document.querySelector("#photos"), previews=document.querySelector("#previews"), info=document.querySelector("#compressInfo");
-photos.addEventListener("change", async ()=>{
-  const files=[...photos.files].slice(0,5);
-  previews.innerHTML="";
-  let before=0, after=0;
-  for(const file of files){
-    before+=file.size;
-    const compressed=await compressImage(file,1600,.82);
-    after+=compressed.size;
-    const url=URL.createObjectURL(compressed);
-    const box=document.createElement("div");
-    box.className="preview";
-    box.innerHTML=`<img src="${url}"><span>${Math.round(compressed.size/1024)} KB</span>`;
-    previews.appendChild(box);
-  }
-  info.textContent=files.length ? `Выбрано: ${files.length}/5 · примерно ${Math.round(before/1024)} KB → ${Math.round(after/1024)} KB после сжатия` : "Фотографии не выбраны";
-});
-async function compressImage(file,maxSide,quality){
-  const img=await createImageBitmap(file);
-  const scale=Math.min(1,maxSide/Math.max(img.width,img.height));
-  const canvas=document.createElement("canvas");
-  canvas.width=Math.round(img.width*scale); canvas.height=Math.round(img.height*scale);
-  canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
-  let blob=await new Promise(r=>canvas.toBlob(r,"image/webp",quality));
-  if(!blob) blob=await new Promise(r=>canvas.toBlob(r,"image/jpeg",quality));
-  return blob || file;
-}
-document.querySelectorAll('input[name="tariff"]').forEach(r=>r.addEventListener("change",()=>document.querySelector("#total").textContent=r.value+" ₽"));
-document.querySelector("#form").addEventListener("submit",e=>{e.preventDefault();alert("Это прототип. Следующим этапом подключим Supabase Storage, базу и оплату через Т‑Банк.");});
-</script>
+<script src="./supabase-config.js"></script>
+<script src="./tp-api.js"></script>
+<script src="./publish-live.js"></script>
 </body></html>

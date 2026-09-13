@@ -113,3 +113,6 @@ button,input,textarea,select{font:inherit}
  .pagehead h1{font-size:38px}
  .socials{grid-template-columns:1fr}
 }
+
+.top-card{border-color:#68323a;box-shadow:0 18px 50px rgba(239,63,79,.08)}
+button:disabled{opacity:.6;cursor:not-allowed}
