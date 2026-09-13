@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Оплата — TATTOO PRICE</title>
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <a class="logo" href="./index.html">TATTOO <b>PRICE</b></a>
+  <nav class="nav"><a href="./index.html">На главную</a></nav>
+</header>
+
+<section class="pagehead">
+  <div class="eyebrow">T-БАНК · ОПЛАТА РАЗМЕЩЕНИЯ</div>
+  <h1 id="heading">Проверяем оплату</h1>
+  <div class="muted" id="message">Получаем подтверждение платежа…</div>
+</section>
+
+<section class="panel" style="max-width:700px">
+  <div id="paymentState" class="notice">Подождите несколько секунд.</div>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px">
+    <a class="btn" href="./index.html">НА ГЛАВНУЮ</a>
+    <a class="btn secondary" href="./publish.html">РАЗМЕСТИТЬ ЕЩЁ</a>
+  </div>
+</section>
+
+<footer class="footer">TATTOO PRICE</footer>
+</div>
+
+<script src="./supabase-config.js"></script>
+<script src="./tp-api.js"></script>
+<script>
+const q = new URLSearchParams(location.search);
+const publicNo = q.get("n");
+const returnedStatus = q.get("status");
+const state = document.querySelector("#paymentState");
+const heading = document.querySelector("#heading");
+const message = document.querySelector("#message");
+
+function sleep(ms){
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function check(){
+  if(!publicNo){
+    heading.textContent = "Не удалось определить объявление";
+    message.textContent = "";
+    state.textContent = "Вернитесь на сайт и попробуйте снова.";
+    return;
+  }
+
+  if(returnedStatus === "fail"){
+    heading.textContent = "Оплата не завершена";
+    message.textContent = "Платёж был отменён или завершился ошибкой.";
+  }
+
+  const ownerKey = localStorage.getItem(`tp_owner_${publicNo}`);
+
+  if(!ownerKey){
+    state.textContent =
+      "Возврат из банка выполнен. Для проверки статуса откройте эту страницу в том же браузере, в котором создавали объявление.";
+    return;
+  }
+
+  for(let i=0;i<10;i++){
+    try{
+      const x = await TP.getOwnerStatus(publicNo, ownerKey);
+
+      if(x?.payment_status === "paid"){
+        heading.textContent = "Оплата прошла";
+        message.textContent =
+          "Объявление оплачено и отправлено на модерацию.";
+        state.innerHTML =
+          `Объявление № <b>${x.public_no}</b> · статус: <b>на модерации</b>.`;
+        return;
+      }
+
+      if(x?.payment_status === "failed"){
+        heading.textContent = "Оплата не прошла";
+        message.textContent =
+          "Можно вернуться к размещению и попробовать оплатить снова.";
+        state.textContent =
+          `Объявление №${x.public_no} пока не оплачено.`;
+        return;
+      }
+
+      state.textContent =
+        `Платёж принят банком, ждём подтверждение… попытка ${i+1}/10`;
+    }catch(e){
+      console.error(e);
+    }
+
+    await sleep(2000);
+  }
+
+  heading.textContent = "Платёж обрабатывается";
+  message.textContent =
+    "Подтверждение может прийти с небольшой задержкой.";
+  state.textContent =
+    "Не создавайте новое объявление. Статус обновится после уведомления Т-Банка.";
+}
+
+check();
+</script>
+</body>
+</html>

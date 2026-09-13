@@ -65,61 +65,98 @@ function cleanUrl(v){
   }catch{return ""}
 }
 
-form.addEventListener("submit", async e => {
-  e.preventDefault();
+let pendingPayment = null;
 
-  if(compressedFiles.length < 1){
-    statusBox.textContent = "Добавь хотя бы одну фотографию.";
-    return;
-  }
-
-  const raw = new FormData(form);
-  const tg = cleanUrl(raw.get("telegram_url"));
-  const vk = cleanUrl(raw.get("vk_url"));
-  const web = cleanUrl(raw.get("website_url"));
-
-  if(!tg && !vk && !web){
-    statusBox.textContent = "Укажи хотя бы один рабочий контакт: Telegram, VK или сайт.";
-    return;
-  }
-
-  const data = {
-    master_name: String(raw.get("master_name")||"").trim(),
-    studio_name: String(raw.get("studio_name")||"").trim(),
-    city: String(raw.get("city")||"").trim(),
-    style: String(raw.get("style")||"").trim(),
-    title: String(raw.get("title")||"").trim(),
-    description: String(raw.get("description")||"").trim(),
-    work_price: raw.get("work_price") ? Number(raw.get("work_price")) : null,
-    price_type: String(raw.get("price_type")||"from"),
-    telegram_url: tg,
-    vk_url: vk,
-    website_url: web,
-    plan: String(raw.get("plan")||"basic")
-  };
-
-  const upload = new FormData();
-  upload.append("data", JSON.stringify(data));
-  compressedFiles.forEach((f,i)=>upload.append("photos",f,`photo-${i+1}.webp`));
-
+async function startPayment(publicNo, ownerKey){
   btn.disabled = true;
-  btn.textContent = "ЗАГРУЗКА…";
-  statusBox.textContent = "Создаём объявление и загружаем фотографии…";
+  btn.textContent = "СОЗДАЁМ ПЛАТЁЖ…";
+  statusBox.textContent = "Создаём защищённый платёж в Т-Банке…";
 
   try{
-    const result = await TP.createListing(upload);
+    const payment = await TP.createTbankPayment(publicNo, ownerKey);
+
+    if(payment.already_paid){
+      location.href = `./payment-return.html?status=success&n=${encodeURIComponent(publicNo)}`;
+      return;
+    }
+
+    if(!payment.payment_url){
+      throw new Error("Т-Банк не вернул ссылку на оплату");
+    }
+
+    statusBox.textContent = "Перенаправляем на защищённую страницу Т-Банка…";
+    location.href = payment.payment_url;
+  }catch(err){
+    console.error(err);
+    pendingPayment = {publicNo, ownerKey};
+    statusBox.textContent = "Ошибка создания платежа: " + err.message;
+    btn.disabled = false;
+    btn.textContent = "ПОВТОРИТЬ ОПЛАТУ";
+  }
+}
+
+form.addEventListener("submit", async e=>{
+  e.preventDefault();
+
+  if(pendingPayment){
+    await startPayment(pendingPayment.publicNo, pendingPayment.ownerKey);
+    return;
+  }
+
+  if(compressedFiles.length<1){
+    statusBox.textContent="Добавь хотя бы одну фотографию.";
+    return;
+  }
+
+  const fd0=new FormData(form);
+  const tg=cleanUrl(fd0.get("telegram_url"));
+  const vk=cleanUrl(fd0.get("vk_url"));
+  const web=cleanUrl(fd0.get("website_url"));
+
+  if(!tg && !vk && !web){
+    statusBox.textContent="Укажи хотя бы один рабочий контакт: Telegram, VK или сайт.";
+    return;
+  }
+
+  const payload={
+    master_name:String(fd0.get("master_name")||"").trim(),
+    studio_name:String(fd0.get("studio_name")||"").trim(),
+    city:String(fd0.get("city")||"").trim(),
+    style:String(fd0.get("style")||"").trim(),
+    title:String(fd0.get("title")||"").trim(),
+    description:String(fd0.get("description")||"").trim(),
+    work_price: fd0.get("work_price") ? Number(fd0.get("work_price")) : null,
+    price_type:String(fd0.get("price_type")||"from"),
+    telegram_url:tg,
+    vk_url:vk,
+    website_url:web,
+    plan:String(fd0.get("plan")||"basic")
+  };
+
+  const fd=new FormData();
+  fd.append("data", JSON.stringify(payload));
+  compressedFiles.forEach((f,i)=>fd.append("photos",f,`photo-${i+1}.webp`));
+
+  btn.disabled=true;
+  btn.textContent="СОЗДАЁМ ОБЪЯВЛЕНИЕ…";
+  statusBox.textContent="Создаём объявление и загружаем фотографии…";
+
+  try{
+    const result=await TP.createListing(fd);
+
     localStorage.setItem(`tp_owner_${result.public_no}`, result.owner_key);
     localStorage.setItem("tp_last_public_no", result.public_no);
 
-    statusBox.innerHTML =
-      `Готово. Объявление № <b>${result.public_no}</b> создано. `+
-      `Загружено фото: ${result.photos_count}. Статус: ожидает оплаты.`;
+    pendingPayment = {
+      publicNo: result.public_no,
+      ownerKey: result.owner_key
+    };
 
-    btn.textContent = "ОБЪЯВЛЕНИЕ СОЗДАНО";
+    await startPayment(result.public_no, result.owner_key);
   }catch(err){
     console.error(err);
-    statusBox.textContent = "Ошибка: "+err.message;
-    btn.disabled = false;
-    btn.textContent = "СОЗДАТЬ ОБЪЯВЛЕНИЕ";
+    statusBox.textContent="Ошибка: "+err.message;
+    btn.disabled=false;
+    btn.textContent="ПЕРЕЙТИ К ОПЛАТЕ";
   }
 });

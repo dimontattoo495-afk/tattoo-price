@@ -112,6 +112,41 @@
     return data;
   }
 
+
+  async function getOwnerStatus(publicNo, ownerKey){
+    return rpc("tp_get_owner_status", {
+      p_public_no: Number(publicNo),
+      p_owner_key: ownerKey
+    });
+  }
+
+  async function createTbankPayment(publicNo, ownerKey){
+    const r = await fetch(C.tbankCreatePaymentFunction, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": C.publishableKey
+      },
+      body: JSON.stringify({
+        public_no: Number(publicNo),
+        owner_key: ownerKey
+      })
+    });
+
+    const text = await r.text();
+    let data = null;
+
+    try{
+      data = text ? JSON.parse(text) : null;
+    }catch{}
+
+    if(!r.ok){
+      throw new Error(data?.error || text || `HTTP ${r.status}`);
+    }
+
+    return data;
+  }
+
   window.TP = {
     rpc,
     photoUrl,
@@ -120,6 +155,8 @@
     registerView,
     toggleLike,
     createListing,
-    getVisitorToken
+    getVisitorToken,
+    getOwnerStatus,
+    createTbankPayment
   };
 })();

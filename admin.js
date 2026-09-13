@@ -151,7 +151,10 @@ function renderListings(list) {
       <div class="admin-links">${links}</div>
 
       <div class="admin-actions">
-        <button class="btn ok" onclick="setStatus('${x.id}','published')">Опубликовать</button>
+        ${x.payment_status === "paid"
+          ? `<button class="btn ok" onclick="setStatus('${x.id}','published')">Опубликовать</button>`
+          : `<button class="btn ok" disabled title="Сначала должна пройти оплата">Опубликовать · нет оплаты</button>`
+        }
         <button class="btn warn" onclick="setStatus('${x.id}','hidden')">Скрыть</button>
         <button class="btn secondary" onclick="setStatus('${x.id}','rejected')">Отклонить</button>
         <button class="btn danger" onclick="deleteListing('${x.id}', '${String(x.public_no).replace(/'/g,"")}')">Удалить</button>
