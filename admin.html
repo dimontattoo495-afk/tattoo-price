@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Админка — TATTOO PRICE</title>
+<link rel="stylesheet" href="./styles.css">
+<link rel="stylesheet" href="./admin.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <a class="logo" href="./index.html">TATTOO <b>PRICE</b></a>
+  <nav class="nav">
+    <a href="./index.html">Сайт</a>
+    <button id="logoutBtn" class="btn secondary" hidden>Выйти</button>
+  </nav>
+</header>
+
+<section class="pagehead">
+  <div class="eyebrow">ПАНЕЛЬ УПРАВЛЕНИЯ</div>
+  <h1>Модерация объявлений</h1>
+  <div class="muted">Опубликовать, отклонить, скрыть или удалить объявление.</div>
+</section>
+
+<section id="loginPanel" class="panel login-panel">
+  <h2>Вход администратора</h2>
+  <div class="field">
+    <label>EMAIL</label>
+    <input class="input" id="email" type="email" value="dimontatoo@yandex.ru" autocomplete="username">
+  </div>
+  <div class="field">
+    <label>ПАРОЛЬ</label>
+    <input class="input" id="password" type="password" autocomplete="current-password">
+  </div>
+  <button class="btn full" id="loginBtn">ВОЙТИ</button>
+  <div class="notice" id="loginStatus" style="margin-top:12px">Используй пароль пользователя, созданного в Supabase Authentication.</div>
+</section>
+
+<section id="adminPanel" hidden>
+  <div class="admin-toolbar">
+    <div class="stats" id="stats"></div>
+    <div class="toolbar-actions">
+      <select class="select" id="statusFilter">
+        <option value="">Все статусы</option>
+        <option value="pending_payment">Ожидает оплаты</option>
+        <option value="paid_review">На модерации</option>
+        <option value="published">Опубликовано</option>
+        <option value="hidden">Скрыто</option>
+        <option value="rejected">Отклонено</option>
+        <option value="expired">Истекло</option>
+      </select>
+      <button class="btn secondary" id="refreshBtn">Обновить</button>
+    </div>
+  </div>
+
+  <div id="adminStatus" class="notice" style="margin:12px 0">Загрузка…</div>
+  <div id="listings" class="admin-list"></div>
+</section>
+
+<footer class="footer">TATTOO PRICE · Admin V1</footer>
+</div>
+
+<script src="./supabase-config.js"></script>
+<script src="./admin.js"></script>
+</body>
+</html>

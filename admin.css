@@ -1,0 +1,33 @@
+
+.login-panel{max-width:520px}
+.admin-toolbar{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:12px}
+.toolbar-actions{display:flex;gap:8px;align-items:center}
+.stats{display:flex;gap:8px;flex-wrap:wrap}
+.stat-pill{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 11px;font-size:12px;color:#c8c8d0}
+.admin-list{display:grid;gap:16px}
+.admin-card{border:1px solid var(--line);background:var(--panel);border-radius:18px;padding:16px}
+.admin-card-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.admin-card h3{margin:0 0 7px;font-size:22px}
+.admin-meta{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}
+.status-badge{border-radius:999px;padding:5px 8px;font-size:11px;border:1px solid #3b3b43}
+.status-published{color:#8ee4ae;border-color:#2e5f40}
+.status-pending_payment{color:#f0c982;border-color:#6f5630}
+.status-paid_review{color:#8ac9ff;border-color:#32556e}
+.status-hidden,.status-rejected,.status-expired{color:#c2c2cb}
+.admin-photos{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:14px 0}
+.admin-photos img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:10px;border:1px solid var(--line);background:#0f0f12}
+.admin-copy{color:#aaaab4;line-height:1.55;font-size:14px;white-space:pre-wrap}
+.admin-price{font-size:22px;font-weight:900;margin:8px 0}
+.admin-actions{display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:14px;margin-top:14px}
+.btn.ok{background:#267346}
+.btn.warn{background:#79591d}
+.btn.danger{background:#7b2930}
+.admin-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:13px}
+.admin-links a{color:#ff9a75}
+.small{font-size:12px;color:#7f7f89}
+@media(max-width:700px){
+ .admin-toolbar{display:block}
+ .toolbar-actions{margin-top:10px}
+ .admin-photos{grid-template-columns:repeat(3,1fr)}
+ .admin-card-head{display:block}
+}
