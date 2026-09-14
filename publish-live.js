@@ -50,45 +50,11 @@ async function compressImage(file,maxSide,quality){
   return blob;
 }
 
-const prices = {basic:199,highlight:399,top:699};
-let betaFreeEnabled = false;
-let betaFreeDays = 15;
+const betaFreeEnabled = true;
+const betaFreeDays = 15;
 
-document.querySelectorAll('input[name="plan"]').forEach(r =>
-  r.addEventListener("change",()=>{
-    if(!betaFreeEnabled){
-      document.querySelector("#total").textContent=prices[r.value]+" ₽";
-    }
-  })
-);
-
-async function loadPublicMode(){
-  try{
-    const s = await TP.getPublicSettings();
-    betaFreeEnabled = !!s?.beta_free_enabled;
-    betaFreeDays = Number(s?.beta_free_days || 15);
-
-    if(betaFreeEnabled){
-      document.querySelector("#betaBanner").style.display = "";
-      document.querySelector("#betaTariff").style.display = "";
-      document.querySelector("#paidTariffs").style.display = "none";
-      document.querySelector("#publishIntro").textContent =
-        `БЕТА-ЗАПУСК: размещение бесплатно на ${betaFreeDays} дней. Без оплаты и ожидания модерации.`;
-      document.querySelector("#payHint").textContent =
-        "Банковская карта не требуется. Объявление публикуется сразу и может быть скрыто администратором при нарушении правил.";
-      document.querySelector("#totalLabel").textContent = "К оплате";
-      document.querySelector("#total").textContent = "0 ₽";
-      btn.textContent = "ОПУБЛИКОВАТЬ БЕСПЛАТНО";
-
-      const basic = document.querySelector('input[name="plan"][value="basic"]');
-      if(basic) basic.checked = true;
-    }
-  }catch(e){
-    console.warn("Public settings unavailable:", e);
-  }
-}
-
-loadPublicMode();
+btn.textContent = "ОПУБЛИКОВАТЬ БЕСПЛАТНО НА 15 ДНЕЙ";
+statusBox.textContent = "Никаких списаний не будет. После отправки объявление публикуется сразу.";
 
 function cleanUrl(v){
   v = String(v||"").trim();
@@ -100,43 +66,8 @@ function cleanUrl(v){
   }catch{return ""}
 }
 
-let pendingPayment = null;
-
-async function startPayment(publicNo, ownerKey){
-  btn.disabled = true;
-  btn.textContent = "СОЗДАЁМ ПЛАТЁЖ…";
-  statusBox.textContent = "Создаём защищённый платёж в Т-Банке…";
-
-  try{
-    const payment = await TP.createTbankPayment(publicNo, ownerKey);
-
-    if(payment.already_paid){
-      location.href = `./payment-return.html?status=success&n=${encodeURIComponent(publicNo)}`;
-      return;
-    }
-
-    if(!payment.payment_url){
-      throw new Error("Т-Банк не вернул ссылку на оплату");
-    }
-
-    statusBox.textContent = "Перенаправляем на защищённую страницу Т-Банка…";
-    location.href = payment.payment_url;
-  }catch(err){
-    console.error(err);
-    pendingPayment = {publicNo, ownerKey};
-    statusBox.textContent = "Ошибка создания платежа: " + err.message;
-    btn.disabled = false;
-    btn.textContent = "ПОВТОРИТЬ ОПЛАТУ";
-  }
-}
-
 form.addEventListener("submit", async e=>{
   e.preventDefault();
-
-  if(pendingPayment){
-    await startPayment(pendingPayment.publicNo, pendingPayment.ownerKey);
-    return;
-  }
 
   if(compressedFiles.length<1){
     statusBox.textContent="Добавь хотя бы одну фотографию.";
@@ -165,7 +96,7 @@ form.addEventListener("submit", async e=>{
     telegram_url:tg,
     vk_url:vk,
     website_url:web,
-    plan:String(fd0.get("plan")||"basic")
+    plan:"basic"
   };
 
   const fd=new FormData();
@@ -182,27 +113,21 @@ form.addEventListener("submit", async e=>{
     localStorage.setItem(`tp_owner_${result.public_no}`, result.owner_key);
     localStorage.setItem("tp_last_public_no", result.public_no);
 
-    // Server-side beta mode is authoritative. Even if the page was cached,
-    // verify owner status before attempting any bank payment.
     const ownerStatus = await TP.getOwnerStatus(result.public_no, result.owner_key);
 
     if(ownerStatus?.is_beta_free && ownerStatus?.status === "published"){
-      statusBox.textContent = "Готово! Работа опубликована бесплатно.";
+      statusBox.textContent = "Готово! Работа опубликована бесплатно на 15 дней.";
       location.href =
         `./my.html?beta=1&n=${encodeURIComponent(result.public_no)}`;
       return;
     }
 
-    pendingPayment = {
-      publicNo: result.public_no,
-      ownerKey: result.owner_key
-    };
-
-    await startPayment(result.public_no, result.owner_key);
+    // Safety: beta page never calls T-Bank.
+    throw new Error("Бесплатный режим на сервере ещё не включён. Оплата НЕ запускалась.");
   }catch(err){
     console.error(err);
     statusBox.textContent="Ошибка: "+err.message;
     btn.disabled=false;
-    btn.textContent="ПЕРЕЙТИ К ОПЛАТЕ";
+    btn.textContent="ОПУБЛИКОВАТЬ БЕСПЛАТНО НА 15 ДНЕЙ";
   }
 });

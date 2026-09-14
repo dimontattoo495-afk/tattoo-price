@@ -11,8 +11,8 @@
 <div class="pagehead">
 <div class="eyebrow">ПУБЛИКАЦИЯ ДЛЯ МАСТЕРОВ</div>
 <h1>Разместить работу</h1>
-<div class="muted" id="publishIntro">До 5 фотографий. Загрузи работу и выбери тариф.</div>
-<div id="betaBanner" style="display:none;margin-top:16px;padding:15px 17px;border:1px solid #24583a;background:#101d16;border-radius:14px;color:#85e6a9;font-weight:800">
+<div class="muted" id="publishIntro">Заполни данные, добавь 1–5 фотографий — работа будет опубликована бесплатно на 15 дней.</div>
+<div id="betaBanner" style="display:block;margin-top:16px;padding:15px 17px;border:1px solid #24583a;background:#101d16;border-radius:14px;color:#85e6a9;font-weight:800">
   БЕТА-ЗАПУСК · Размещение бесплатно на 15 дней · Без списаний · Публикация сразу
 </div>
 </div>
@@ -58,22 +58,21 @@
 
  <aside>
   <section class="panel summary">
-   <h2 id="tariffTitle">4. Тариф публикации</h2>
+   <h2>4. Бесплатное размещение</h2>
 
-   <div id="betaTariff" style="display:none">
-    <div class="tariff" style="border-color:#24583a;background:#101d16">
-      <div class="tariff-top"><span><b>БЕТА · Стандарт</b></span><span style="color:#85e6a9">0 ₽</span></div>
-      <small>15 дней в каталоге. Без оплаты. Публикация сразу, с последующей модерацией.</small>
+   <div class="tariff" style="border-color:#24583a;background:#101d16">
+    <div class="tariff-top">
+      <span><b>БЕТА · 15 ДНЕЙ</b></span>
+      <span style="color:#85e6a9;font-size:22px;font-weight:900">0 ₽</span>
     </div>
+    <small>Без банковской карты и без списаний. Работа публикуется сразу. Действует постмодерация.</small>
    </div>
 
-   <div class="tariffs" id="paidTariffs">
-    <label class="tariff"><div class="tariff-top"><span><input type="radio" name="plan" value="basic" checked>Стандарт</span><span>199 ₽</span></div><small>30 дней в общей ленте.</small></label>
-    <label class="tariff"><div class="tariff-top"><span><input type="radio" name="plan" value="highlight">Выделенная</span><span>399 ₽</span></div><small>30 дней + заметное выделение.</small></label>
-    <label class="tariff"><div class="tariff-top"><span><input type="radio" name="plan" value="top">TOP</span><span>699 ₽</span></div><small>30 дней + TOP + приоритет.</small></label>
+   <input type="hidden" name="plan" value="basic">
+
+   <div class="notice" style="margin-top:12px;border-color:#24583a;background:#101d16">
+    Оплата не требуется. После отправки работа сразу появится в каталоге на 15 дней.
    </div>
-   <div class="hint" id="payHint" style="margin-top:10px">После создания объявления откроется защищённая страница оплаты Т-Банка.</div>
-   <div class="total"><span id="totalLabel">К оплате</span><span id="total">199 ₽</span></div>
    <label class="check">
     <input required type="checkbox">
     <span>Подтверждаю право на публикацию фотографий, текстов и контактов и принимаю условия <a href="./consent-public.html" target="_blank">публичного размещения данных</a>.</span>
@@ -86,8 +85,8 @@
     <input required type="checkbox">
     <span>Принимаю <a href="./offer.html" target="_blank">Публичную оферту</a> и <a href="./rules.html" target="_blank">Правила размещения</a>.</span>
    </label>
-   <button class="btn full" id="submitBtn" type="submit">ПЕРЕЙТИ К ОПЛАТЕ</button>
-   <div class="notice" id="status" style="margin-top:12px">После создания объявления следуйте подсказкам на экране.</div>
+   <button class="btn full" id="submitBtn" type="submit">ОПУБЛИКОВАТЬ БЕСПЛАТНО НА 15 ДНЕЙ</button>
+   <div class="notice" id="status" style="margin-top:12px">Никаких списаний не будет. После отправки объявление публикуется сразу.</div>
   </section>
  </aside>
 </form>
@@ -104,6 +103,6 @@
 </footer>
 </div>
 <script src="./supabase-config.js"></script>
-<script src="./tp-api-payments.js?v=beta1"></script>
-<script src="./publish-live.js?v=beta1"></script>
+<script src="./tp-api-payments.js?v=beta3"></script>
+<script src="./publish-live.js?v=beta3"></script>
 </body></html>
