@@ -29,13 +29,14 @@
 
 
 
-<section style="margin:12px 0 28px;padding:18px 20px;border:1px solid #24583a;background:#101d16;border-radius:18px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+<section id="betaHome" style="margin:12px 0 28px;padding:18px 20px;border:1px solid #24583a;background:#101d16;border-radius:18px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap">
   <div>
     <div class="eyebrow" style="color:#85e6a9">БЕТА-ЗАПУСК ДЛЯ МАСТЕРОВ</div>
-    <h2 style="margin:5px 0 7px">Размести работу бесплатно на 15 дней</h2>
-    <div class="muted">Без банковской карты и списаний. Работа появляется в каталоге сразу. Действует постмодерация.</div>
+    <h2 id="betaHomeTitle" style="margin:5px 0 7px">Первые 50 размещений бесплатно на 15 дней</h2>
+    <div class="muted" id="betaHomeText">Проверяем, сколько бесплатных мест осталось…</div>
+    <div id="betaHomeCounter" style="margin-top:8px;color:#85e6a9;font-weight:900"></div>
   </div>
-  <a class="primary" href="./publish.html?beta=15" style="text-decoration:none">РАЗМЕСТИТЬ БЕСПЛАТНО · 15 ДНЕЙ</a>
+  <a id="betaHomeCta" class="primary" href="./publish.html" style="text-decoration:none">РАЗМЕСТИТЬ БЕСПЛАТНО</a>
 </section>
 
 <section class="how-section" id="how">
@@ -55,26 +56,26 @@
 
     <article class="how-card">
       <div class="how-num">02</div>
-      <h3>Оплати размещение</h3>
-      <p>Оплата проходит на защищённой странице Т-Банка. Платёж относится только к размещению объявления.</p>
+      <h3 id="how2Title">Получи бесплатное место</h3>
+      <p id="how2Text">Первые 50 размещений публикуются без банковской карты и списаний.</p>
     </article>
 
     <article class="how-card">
       <div class="how-num">03</div>
-      <h3>Пройди модерацию</h3>
-      <p>Мы проверим фотографии, описание и контакты. После одобрения объявление появится в каталоге.</p>
+      <h3 id="how3Title">Публикация сразу</h3>
+      <p id="how3Text">Работа сразу появляется в каталоге. Нарушения проверяются постмодерацией.</p>
     </article>
 
     <article class="how-card">
       <div class="how-num">04</div>
-      <h3>30 дней в каталоге</h3>
-      <p>Срок начинается с момента публикации. В разделе «Мои объявления» размещение можно продлить ещё на 30 дней.</p>
+      <h3 id="how4Title">15 дней в каталоге</h3>
+      <p id="how4Text">Бесплатное бета-размещение действует 15 дней.</p>
     </article>
   </div>
 
   <div class="service-note">
     <b>Важно:</b> TATTOO PRICE не продаёт татуировки и не принимает оплату за работу мастера.
-    Клиент связывается и рассчитывается с мастером напрямую. Сервис принимает оплату только за размещение объявления.
+    Клиент связывается и рассчитывается с мастером напрямую. Во время бета-запуска первые 50 размещений бесплатны; после окончания акции действуют обычные тарифы сервиса.
   </div>
 </section>
 
@@ -109,4 +110,67 @@
 <script src="./supabase-config.js"></script>
 <script src="./tp-api.js"></script>
 <script src="./app-live.js"></script>
+
+<script>
+(async function(){
+  const box = document.querySelector("#betaHome");
+  if(!box || !window.TP_CONFIG) return;
+
+  try{
+    const r = await fetch(
+      `${TP_CONFIG.supabaseUrl}/rest/v1/rpc/tp_get_public_settings`,
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "apikey":TP_CONFIG.publishableKey
+        },
+        body:"{}"
+      }
+    );
+
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    const s = await r.json();
+
+    const remaining = Math.max(0, Number(s.beta_free_remaining || 0));
+    const limit = Number(s.beta_free_limit || 50);
+    const days = Number(s.beta_free_days || 15);
+    const active = !!s.beta_free_active && remaining > 0;
+
+    const title = document.querySelector("#betaHomeTitle");
+    const text = document.querySelector("#betaHomeText");
+    const counter = document.querySelector("#betaHomeCounter");
+    const cta = document.querySelector("#betaHomeCta");
+
+    if(active){
+      title.textContent = `Первые ${limit} размещений бесплатно на ${days} дней`;
+      text.textContent = "Без банковской карты и списаний. Работа появляется в каталоге сразу.";
+      counter.textContent = `Осталось бесплатных мест: ${remaining} из ${limit}`;
+      cta.textContent = `РАЗМЕСТИТЬ БЕСПЛАТНО · ${days} ДНЕЙ`;
+    }else{
+      title.textContent = "Бесплатные места закончились";
+      text.textContent = "Бета-квота из 50 размещений использована. Доступны обычные тарифы.";
+      counter.textContent = "";
+      cta.textContent = "РАЗМЕСТИТЬ РАБОТУ";
+
+      document.querySelector("#how2Title").textContent = "Оплати размещение";
+      document.querySelector("#how2Text").textContent =
+        "Оплата проходит на защищённой странице Т-Банка.";
+      document.querySelector("#how3Title").textContent = "Пройди модерацию";
+      document.querySelector("#how3Text").textContent =
+        "После оплаты объявление проходит обычную модерацию.";
+      document.querySelector("#how4Title").textContent = "30 дней в каталоге";
+      document.querySelector("#how4Text").textContent =
+        "Срок начинается с момента публикации. Размещение можно продлить.";
+    }
+  }catch(e){
+    console.warn("Beta counter unavailable:", e);
+    document.querySelector("#betaHomeText").textContent =
+      "Размещение для мастеров доступно. Актуальные условия — на странице публикации.";
+    document.querySelector("#betaHomeCounter").textContent = "";
+    document.querySelector("#betaHomeCta").textContent = "РАЗМЕСТИТЬ РАБОТУ";
+  }
+})();
+</script>
+
 </body></html>

@@ -1,10 +1,7 @@
--- TATTOO PRICE — BETA FREE MODE v1
--- Goal:
--- 1) During beta: no T-Bank charge for NEW listings.
--- 2) New listings are published immediately for 30 days.
--- 3) Admin can still hide/reject/delete afterwards (post-moderation).
--- 4) Turn beta off later with ONE SQL command:
---    update public.tp_site_settings set beta_free_enabled = false where id = 1;
+-- TATTOO PRICE — BETA 50 FREE PLACEMENTS / 15 DAYS — V4
+-- First 50 NEW placements are free for 15 days.
+-- After the quota is exhausted, new listings automatically use the normal paid flow.
+-- This is a limit of PLACEMENTS, not verified unique masters.
 
 begin;
 
@@ -14,24 +11,50 @@ alter table public.tp_listings
 create table if not exists public.tp_site_settings (
   id integer primary key check (id = 1),
   beta_free_enabled boolean not null default true,
-  beta_free_days integer not null default 15
-    check (beta_free_days between 1 and 90),
-  beta_message text not null default 'БЕТА-ЗАПУСК: размещение бесплатно на 15 дней. Публикация сразу.',
+  beta_free_days integer not null default 15,
+  beta_free_limit integer not null default 50,
+  beta_free_used integer not null default 0,
+  beta_message text not null default 'Первые 50 размещений бесплатно на 15 дней.',
   updated_at timestamptz not null default now()
 );
 
+alter table public.tp_site_settings
+  add column if not exists beta_free_limit integer not null default 50;
+
+alter table public.tp_site_settings
+  add column if not exists beta_free_used integer not null default 0;
+
 insert into public.tp_site_settings (
-  id, beta_free_enabled, beta_free_days, beta_message
+  id,
+  beta_free_enabled,
+  beta_free_days,
+  beta_free_limit,
+  beta_free_used,
+  beta_message
 )
 values (
-  1, true, 15,
-  'БЕТА-ЗАПУСК: размещение бесплатно на 15 дней. Публикация сразу.'
+  1,
+  true,
+  15,
+  50,
+  0,
+  'Первые 50 размещений бесплатно на 15 дней.'
 )
-on conflict (id) do update set
+on conflict (id) do nothing;
+
+-- Keep already consumed beta places if V3 was used before V4.
+update public.tp_site_settings
+set
   beta_free_enabled = true,
-  beta_free_days = 30,
-  beta_message = excluded.beta_message,
-  updated_at = now();
+  beta_free_days = 15,
+  beta_free_limit = 50,
+  beta_free_used = greatest(
+    coalesce(beta_free_used, 0),
+    (select count(*)::integer from public.tp_listings where is_beta_free = true)
+  ),
+  beta_message = 'Первые 50 размещений бесплатно на 15 дней.',
+  updated_at = now()
+where id = 1;
 
 alter table public.tp_site_settings enable row level security;
 revoke all on table public.tp_site_settings from anon, authenticated;
@@ -44,7 +67,13 @@ set search_path = public
 as $$
   select jsonb_build_object(
     'beta_free_enabled', s.beta_free_enabled,
+    'beta_free_active',
+      (s.beta_free_enabled and s.beta_free_used < s.beta_free_limit),
     'beta_free_days', s.beta_free_days,
+    'beta_free_limit', s.beta_free_limit,
+    'beta_free_used', s.beta_free_used,
+    'beta_free_remaining',
+      greatest(s.beta_free_limit - s.beta_free_used, 0),
     'beta_message', s.beta_message
   )
   from public.tp_site_settings s
@@ -54,6 +83,9 @@ $$;
 grant execute on function public.tp_get_public_settings()
 to anon, authenticated;
 
+-- Atomic quota reservation:
+-- UPDATE ... WHERE used < limit prevents two simultaneous visitors
+-- from both taking the last free place.
 create or replace function public.tp_beta_before_listing_insert()
 returns trigger
 language plpgsql
@@ -61,26 +93,35 @@ security definer
 set search_path = public
 as $$
 declare
-  v_enabled boolean := false;
-  v_days integer := 30;
+  v_days integer;
 begin
-  select beta_free_enabled, beta_free_days
-    into v_enabled, v_days
-  from public.tp_site_settings
-  where id = 1;
+  v_days := null;
 
-  if coalesce(v_enabled, false) then
-    -- Keep the normal price in placement_price so the paid system can be
-    -- restored later without rewriting old listings.
+  update public.tp_site_settings
+     set beta_free_used = beta_free_used + 1,
+         updated_at = now()
+   where id = 1
+     and beta_free_enabled = true
+     and beta_free_used < beta_free_limit
+  returning beta_free_days
+       into v_days;
+
+  if v_days is not null then
     new.plan := 'basic';
     new.placement_price := 199;
 
-    -- Compatibility: existing payment code treats "paid" as "do not charge again".
-    -- is_beta_free distinguishes this from a real payment.
+    -- Existing payment code interprets "paid" as "do not create initial payment".
+    -- is_beta_free distinguishes the free beta placement from a real payment.
     new.payment_status := 'paid';
     new.status := 'published';
-    new.expires_at := now() + make_interval(days => greatest(1, least(coalesce(v_days, 15), 90)));
+    new.expires_at := now() + make_interval(
+      days => greatest(1, least(coalesce(v_days, 15), 90))
+    );
     new.is_beta_free := true;
+  else
+    -- Quota is exhausted: leave the listing in the normal paid state
+    -- produced by create-listing.
+    new.is_beta_free := false;
   end if;
 
   return new;
@@ -94,8 +135,7 @@ before insert on public.tp_listings
 for each row
 execute function public.tp_beta_before_listing_insert();
 
--- Owner status: expose the beta flag so the UI can say "free beta",
--- not "paid".
+-- Owner status includes beta flag.
 drop function if exists public.tp_get_owner_status(bigint, text);
 
 create function public.tp_get_owner_status(
