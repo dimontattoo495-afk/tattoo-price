@@ -57,6 +57,10 @@
     });
   }
 
+  async function getPublicSettings(){
+    return rpc("tp_get_public_settings", {});
+  }
+
   async function registerView(publicNo){
     return rpc("tp_register_view", {
       p_public_no: Number(publicNo),
@@ -161,6 +165,7 @@
     rpc,
     photoUrl,
     getFeed,
+    getPublicSettings,
     getListing,
     registerView,
     toggleLike,

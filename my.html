@@ -58,7 +58,7 @@
 </div>
 
 <script src="./supabase-config.js"></script>
-<script src="./tp-api-payments.js?v=3"></script>
+<script src="./tp-api-payments.js?v=beta1"></script>
 <script>
 const list = document.querySelector("#list");
 const statusBox = document.querySelector("#status");
@@ -100,12 +100,22 @@ function actionHtml(x){
   const no = Number(x.public_no);
   const price = money(x.placement_price);
 
+  if(x.status === "published" && x.is_beta_free){
+    return `
+      <a class="btn secondary" href="./listing.html?n=${no}">Открыть</a>
+      <span class="muted">Бесплатное размещение в период бета-запуска.</span>`;
+  }
+
   if(x.status === "published" && x.payment_status === "paid"){
     return `
       <a class="btn secondary" href="./listing.html?n=${no}">Открыть</a>
       <button class="btn" onclick="pay(${no},'renewal')">
         Продлить на 30 дней · ${price}
       </button>`;
+  }
+
+  if(x.status === "expired" && x.is_beta_free){
+    return `<span class="muted">Бесплатный тестовый период объявления завершён.</span>`;
   }
 
   if(x.status === "expired" && x.payment_status === "paid"){
@@ -175,7 +185,7 @@ function card(x){
       </div>
       <div>
         <small>Оплата</small>
-        <b>${x.payment_status === "paid" ? "Оплачено" : x.payment_status}</b>
+        <b>${x.is_beta_free ? "Бесплатный тест" : (x.payment_status === "paid" ? "Оплачено" : x.payment_status)}</b>
       </div>
       <div>
         <small>Действует до</small>
@@ -252,6 +262,10 @@ async function load(){
   list.innerHTML = results.map(card).join("");
 }
 
+const betaCreated = new URLSearchParams(location.search).get("beta") === "1";
+if(betaCreated){
+  statusBox.textContent = "Готово! Работа опубликована бесплатно на 15 дней. Списание не выполнялось.";
+}
 load();
 </script>
 </body>

@@ -51,9 +51,44 @@ async function compressImage(file,maxSide,quality){
 }
 
 const prices = {basic:199,highlight:399,top:699};
+let betaFreeEnabled = false;
+let betaFreeDays = 15;
+
 document.querySelectorAll('input[name="plan"]').forEach(r =>
-  r.addEventListener("change",()=>document.querySelector("#total").textContent=prices[r.value]+" ₽")
+  r.addEventListener("change",()=>{
+    if(!betaFreeEnabled){
+      document.querySelector("#total").textContent=prices[r.value]+" ₽";
+    }
+  })
 );
+
+async function loadPublicMode(){
+  try{
+    const s = await TP.getPublicSettings();
+    betaFreeEnabled = !!s?.beta_free_enabled;
+    betaFreeDays = Number(s?.beta_free_days || 15);
+
+    if(betaFreeEnabled){
+      document.querySelector("#betaBanner").style.display = "";
+      document.querySelector("#betaTariff").style.display = "";
+      document.querySelector("#paidTariffs").style.display = "none";
+      document.querySelector("#publishIntro").textContent =
+        `БЕТА-ЗАПУСК: размещение бесплатно на ${betaFreeDays} дней. Без оплаты и ожидания модерации.`;
+      document.querySelector("#payHint").textContent =
+        "Банковская карта не требуется. Объявление публикуется сразу и может быть скрыто администратором при нарушении правил.";
+      document.querySelector("#totalLabel").textContent = "К оплате";
+      document.querySelector("#total").textContent = "0 ₽";
+      btn.textContent = "ОПУБЛИКОВАТЬ БЕСПЛАТНО";
+
+      const basic = document.querySelector('input[name="plan"][value="basic"]');
+      if(basic) basic.checked = true;
+    }
+  }catch(e){
+    console.warn("Public settings unavailable:", e);
+  }
+}
+
+loadPublicMode();
 
 function cleanUrl(v){
   v = String(v||"").trim();
@@ -146,6 +181,17 @@ form.addEventListener("submit", async e=>{
 
     localStorage.setItem(`tp_owner_${result.public_no}`, result.owner_key);
     localStorage.setItem("tp_last_public_no", result.public_no);
+
+    // Server-side beta mode is authoritative. Even if the page was cached,
+    // verify owner status before attempting any bank payment.
+    const ownerStatus = await TP.getOwnerStatus(result.public_no, result.owner_key);
+
+    if(ownerStatus?.is_beta_free && ownerStatus?.status === "published"){
+      statusBox.textContent = "Готово! Работа опубликована бесплатно.";
+      location.href =
+        `./my.html?beta=1&n=${encodeURIComponent(result.public_no)}`;
+      return;
+    }
 
     pendingPayment = {
       publicNo: result.public_no,
