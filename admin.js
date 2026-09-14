@@ -4,6 +4,7 @@ const ADMIN_API = `${C.supabaseUrl}/functions/v1/admin-api`;
 let session = null;
 let currentListings = [];
 let currentSummary = {};
+let currentBetaSettings = {};
 
 const $ = s => document.querySelector(s);
 
@@ -132,8 +133,9 @@ function logout() {
   $("#logoutBtn").hidden = true;
 }
 
-function renderDashboard(s) {
+function renderDashboard(s, beta = {}) {
   currentSummary = s || {};
+  currentBetaSettings = beta || {};
 
   const cards = [
     ["Выручка · боевые", money(s.revenue_live), "primary"],
@@ -153,6 +155,20 @@ function renderDashboard(s) {
     </div>`
   ).join("");
 
+  const betaEnabled = !!beta.beta_free_enabled;
+  const betaLimit = Number(beta.beta_free_limit || 50);
+  const betaUsed = Number(beta.beta_free_used || 0);
+  const betaRemaining = Math.max(0, Number(beta.beta_free_remaining ?? (betaLimit - betaUsed)));
+
+  const quota = $("#betaQuotaBar");
+  if(quota){
+    quota.hidden = false;
+    quota.innerHTML = betaEnabled
+      ? `<b>БЕТА · бесплатные места</b>
+         <span>Использовано: <b>${betaUsed} из ${betaLimit}</b> · осталось: <b>${betaRemaining}</b> · срок: <b>${Number(beta.beta_free_days || 15)} дней</b></span>`
+      : `<b>БЕТА отключена</b><span>Новые размещения работают по обычным тарифам.</span>`;
+  }
+
   const testListings = Number(s.test_listings || 0);
   const testPayments = Number(s.test_payments || 0);
 
@@ -165,7 +181,7 @@ function renderDashboard(s) {
 
 async function loadSummary() {
   const data = await api({action:"summary"});
-  renderDashboard(data.summary || {});
+  renderDashboard(data.summary || {}, data.beta_settings || {});
 }
 
 async function loadListings() {
@@ -239,6 +255,30 @@ function expiryHtml(x) {
   return `<span class="expiry-good">До: ${dateText(x.expires_at)} · ${days} дн.</span>`;
 }
 
+function isBetaFreeListing(x, pay = null) {
+  if(x?.is_beta_free === true) return true;
+
+  // Temporary fallback while an older admin-api is still cached/deployed.
+  const ps = pay || paymentSummary(x);
+  return x?.payment_status === "paid" &&
+    ps.liveOk.length === 0 &&
+    Array.isArray(x?.tp_payments) &&
+    x.tp_payments.length === 0;
+}
+
+function betaSlotFallback(x) {
+  const betaRows = currentListings
+    .filter(row => isBetaFreeListing(row))
+    .slice()
+    .sort((a,b) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      || Number(a.public_no || 0) - Number(b.public_no || 0)
+    );
+
+  const i = betaRows.findIndex(row => String(row.id) === String(x.id));
+  return i >= 0 ? i + 1 : null;
+}
+
 function renderListings(list) {
   $("#listings").innerHTML = list.map(x => {
     const photos = (x.tp_listing_photos || [])
@@ -258,8 +298,15 @@ function renderListings(list) {
     ].filter(Boolean).join("");
 
     const pay = paymentSummary(x);
+    const isBeta = isBetaFreeListing(x, pay);
+    const betaLimit = Number(currentBetaSettings.beta_free_limit || 50);
+    const betaRemaining = Math.max(
+      0,
+      Number(currentBetaSettings.beta_free_remaining ?? (betaLimit - Number(currentBetaSettings.beta_free_used || 0)))
+    );
+    const betaSlot = Number(x.beta_slot_no || 0) || betaSlotFallback(x);
 
-    return `<article class="admin-card" data-id="${esc(x.id)}">
+    return `<article class="admin-card ${isBeta ? "admin-card-beta" : ""}" data-id="${esc(x.id)}">
       <div class="admin-card-head">
         <div>
           <div class="small">
@@ -271,17 +318,23 @@ function renderListings(list) {
           <div class="admin-meta">
             <span class="tag">${esc(x.city)}</span>
             <span class="tag">${esc(x.style)}</span>
-            <span class="tag">${esc(x.plan)}</span>
+            ${isBeta
+              ? `<span class="tag beta-badge">БЕТА · бесплатно</span>`
+              : `<span class="tag">${esc(x.plan)}</span>`
+            }
             <span class="status-badge status-${esc(x.status)}">
               ${statusLabel(x.status)}
             </span>
-            <span class="tag">payment: ${esc(x.payment_status)}</span>
+            ${isBeta
+              ? `<span class="tag beta-badge-soft">без списаний</span>`
+              : `<span class="tag">payment: ${esc(x.payment_status)}</span>`
+            }
           </div>
         </div>
 
         <div>
           <div class="admin-price">${money(x.work_price)}</div>
-          <div class="small">Размещение: ${money(x.placement_price)}</div>
+          <div class="small">${isBeta ? "Размещение: бесплатно" : `Размещение: ${money(x.placement_price)}`}</div>
         </div>
       </div>
 
@@ -302,10 +355,15 @@ function renderListings(list) {
       <div class="admin-links">${links}</div>
 
       <div class="admin-payline">
-        <span>Боевых оплат: <b>${pay.liveOk.length}</b></span>
-        <span>Первичных: <b>${pay.initial}</b></span>
-        <span>Продлений: <b>${pay.renewals}</b></span>
-        <span>Получено: <b>${money(pay.total)}</b></span>
+        ${isBeta
+          ? `<span class="beta-line"><b>Бесплатное место №${betaSlot || "—"} из ${betaLimit}</b></span>
+             <span>Осталось мест: <b>${betaRemaining}</b></span>
+             <span>Оплата: <b>не требуется</b></span>`
+          : `<span>Боевых оплат: <b>${pay.liveOk.length}</b></span>
+             <span>Первичных: <b>${pay.initial}</b></span>
+             <span>Продлений: <b>${pay.renewals}</b></span>
+             <span>Получено: <b>${money(pay.total)}</b></span>`
+        }
         <span>Просмотров: <b>${Number(x.views || 0)}</b></span>
         ${expiryHtml(x)}
       </div>
