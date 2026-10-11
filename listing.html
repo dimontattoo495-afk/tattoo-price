@@ -72,7 +72,7 @@
 
       <div class="muted" style="font-size:12px;line-height:1.45;margin-top:13px">
         Оплата татуировки происходит напрямую мастеру.
-        Сайт продаёт только размещение объявления.
+        TATTOO PRICE принимает оплату только за PRO и продвижение профиля.
       </div>
 
       <div class="socials" id="socials"></div>
@@ -161,7 +161,7 @@ async function loadListing(){
     `${x.city || ""} · ${x.style || ""}`;
 
   document.querySelector("#title").textContent = x.title || "";
-  document.querySelector("#description").textContent = x.description || "";
+  document.querySelector("#description").textContent = x.description || (x.plan === "pro" ? "" : "Бесплатная карточка мастера. Расширенное описание доступно в PRO-профиле.");
   document.querySelector("#master").textContent = x.master_name || "";
   document.querySelector("#city").textContent = x.city || "";
   document.querySelector("#style").textContent = x.style || "";
@@ -173,12 +173,11 @@ async function loadListing(){
   document.querySelector("#tags").innerHTML =
     `<span class="tag">${esc(x.city)}</span>` +
     `<span class="tag">${esc(x.style)}</span>` +
-    (x.plan === "highlight" ? '<span class="tag featured">ВЫДЕЛЕНО</span>' : "") +
-    (x.plan === "top" ? '<span class="tag hot">TOP</span>' : "");
+    (x.plan === "pro" ? '<span class="tag featured">PRO</span>' : '<span class="tag">FREE</span>');
 
   const sidecard = document.querySelector(".sidecard");
-  sidecard.classList.toggle("highlight-plan", x.plan === "highlight");
-  sidecard.classList.toggle("top-plan", x.plan === "top");
+  sidecard.classList.toggle("highlight-plan", x.plan === "pro");
+  sidecard.classList.toggle("top-plan", false);
 
   const photos = Array.isArray(x.photos) ? x.photos : [];
 
