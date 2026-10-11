@@ -143,7 +143,9 @@ function renderDashboard(s) {
     ["На модерации", Number(s.paid_review || 0), "warn"],
     ["Опубликовано", Number(s.published || 0), "good"],
     ["Истекают ≤ 5 дней", Number(s.expiring_5d || 0), "warn"],
-    ["Истекло", Number(s.expired || 0), ""]
+    ["Истекло", Number(s.expired || 0), ""],
+    ["Публичных профилей", Number(s.imported_profiles || 0), ""],
+    ["Запросов на проверку", Number(s.pending_claims || 0), "warn"]
   ];
 
   $("#dashboard").innerHTML = cards.map(([k,v,c]) =>
@@ -191,7 +193,8 @@ async function refreshAll() {
 
   await Promise.all([
     loadSummary(),
-    loadListings()
+    loadListings(),
+    loadClaims()
   ]);
 }
 
@@ -254,6 +257,9 @@ function renderListings(list) {
         : "",
       x.website_url
         ? `<a target="_blank" rel="noopener" href="${esc(x.website_url)}">Сайт</a>`
+        : "",
+      x.profile_origin === "imported" && x.source_url
+        ? `<a target="_blank" rel="noopener" href="${esc(x.source_url)}">Источник · ${esc(x.source_label||"публичный")}</a>`
         : ""
     ].filter(Boolean).join("");
 
@@ -272,6 +278,7 @@ function renderListings(list) {
             <span class="tag">${esc(x.city)}</span>
             <span class="tag">${esc(x.style)}</span>
             <span class="tag">${esc(x.plan)}</span>
+            ${x.profile_origin === "imported" ? `<span class="tag">ИМПОРТ · ${esc(x.claim_status||"")}</span>` : ``}
             <span class="status-badge status-${esc(x.status)}">
               ${statusLabel(x.status)}
             </span>
@@ -346,6 +353,72 @@ function applySearch() {
   renderListings(filtered);
 }
 
+
+async function loadClaims() {
+  if(!document.querySelector("#claimsList")) return;
+  try {
+    const data = await api({action:"list_claims", status:"pending_review"});
+    renderClaims(data.claims || []);
+  } catch(e) {
+    document.querySelector("#claimsStatus").textContent = "Ошибка загрузки запросов: " + e.message;
+  }
+}
+
+function renderClaims(items) {
+  const list = document.querySelector("#claimsList");
+  const st = document.querySelector("#claimsStatus");
+  if(!list || !st) return;
+  st.textContent = `Ожидают проверки: ${items.length}`;
+  list.innerHTML = items.map(c => `<article class="admin-card">
+    <div class="admin-card-head"><div><div class="small">Профиль №${esc(c.public_no)} · ${c.claim_type === "removal" ? "УДАЛЕНИЕ" : "ПОДТВЕРЖДЕНИЕ"}</div><h3>${esc(c.claimant_email || "Аккаунт мастера")}</h3></div><span class="tag">${esc(c.challenge_code)}</span></div>
+    <div class="admin-copy">${c.claim_type === "removal" ? "Пользователь просит удалить публичный профиль." : "Пользователь просит привязать публичный профиль к своему аккаунту."}</div>
+    <div class="admin-links">${c.source_url ? `<a href="${esc(c.source_url)}" target="_blank" rel="noopener">Открыть источник</a>` : ""}${c.evidence_url ? `<a href="${esc(c.evidence_url)}" target="_blank" rel="noopener">Открыть доказательство</a>` : ""}</div>
+    ${c.evidence_note ? `<div class="admin-copy" style="margin-top:8px">Комментарий: ${esc(c.evidence_note)}</div>` : ""}
+    <div class="admin-actions"><button class="btn ok" onclick="resolveClaim('${c.id}','approve')">${c.claim_type === "removal" ? "Подтвердить удаление" : "Подтвердить владение"}</button><button class="btn secondary" onclick="resolveClaim('${c.id}','reject')">Отклонить</button></div>
+  </article>`).join("") || '<div class="panel">Нет запросов, ожидающих проверки.</div>';
+}
+
+window.resolveClaim = async function(id, decision) {
+  if(decision === "approve" && !confirm("Подтвердить этот запрос после проверки кода на публичном источнике?")) return;
+  try {
+    document.querySelector("#claimsStatus").textContent = "Сохраняем решение…";
+    await api({action:"resolve_claim", claim_id:id, decision});
+    await refreshAll();
+  } catch(e) {
+    document.querySelector("#claimsStatus").textContent = "Ошибка: " + e.message;
+  }
+};
+
+async function importPublicProfile() {
+  const b = document.querySelector("#importProfileBtn");
+  const st = document.querySelector("#importProfileStatus");
+  b.disabled = true; st.textContent = "Скачиваем фото и создаём публичный профиль…";
+  try {
+    const payload = {
+      action:"import_profile",
+      master_name:document.querySelector("#impMaster").value.trim(),
+      studio_name:document.querySelector("#impStudio").value.trim(),
+      city:document.querySelector("#impCity").value.trim(),
+      style:document.querySelector("#impStyle").value.trim(),
+      title:document.querySelector("#impTitle").value.trim(),
+      description:document.querySelector("#impDescription").value.trim(),
+      work_price:document.querySelector("#impPrice").value.trim(),
+      price_type:document.querySelector("#impPriceType").value,
+      source_url:document.querySelector("#impSource").value.trim(),
+      photo_url:document.querySelector("#impPhoto").value.trim(),
+      vk_url:document.querySelector("#impVk").value.trim(),
+      telegram_url:document.querySelector("#impTelegram").value.trim(),
+      website_url:document.querySelector("#impWebsite").value.trim()
+    };
+    const r = await api(payload);
+    st.textContent = `Готово: создан неподтверждённый FREE-профиль №${r.public_no} с одним фото.`;
+    ["impMaster","impStudio","impCity","impStyle","impTitle","impDescription","impPrice","impSource","impPhoto","impVk","impTelegram","impWebsite"].forEach(id=>{const el=document.querySelector("#"+id);if(el)el.value=""});
+    await refreshAll();
+  } catch(e) {
+    st.textContent = "Ошибка импорта: " + e.message;
+  } finally { b.disabled = false; }
+}
+
 window.setStatus = async function(id, status) {
   try {
     $("#adminStatus").textContent = "Сохраняем статус…";
@@ -413,6 +486,8 @@ $("#cleanupTestBtn").addEventListener("click", async () => {
       "Ошибка очистки: " + e.message;
   }
 });
+
+if(document.querySelector("#importProfileBtn")) document.querySelector("#importProfileBtn").addEventListener("click", importPublicProfile);
 
 $("#loginBtn").addEventListener("click", async () => {
   $("#loginStatus").textContent = "Входим…";

@@ -24,6 +24,16 @@
 
 <div id="loading" class="panel">Загружаем объявление…</div>
 
+<section id="publicProfileNotice" class="panel" hidden style="margin-bottom:16px;border-color:#5d3326;background:#171110">
+  <div class="eyebrow" style="color:#ff9b78">НЕПОДТВЕРЖДЁННЫЙ ПРОФИЛЬ</div>
+  <p style="margin:8px 0 10px;line-height:1.55">Этот профиль создан на основе открытых профессиональных данных. Если это ваш профиль, вы можете подтвердить владение и получить доступ к редактированию. Также можно запросить удаление.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <a class="btn" id="claimProfileBtn" href="#">ЭТО МОЙ ПРОФИЛЬ</a>
+    <a class="btn secondary" id="removeProfileBtn" href="#">ЗАПРОСИТЬ УДАЛЕНИЕ</a>
+    <a class="btn secondary" id="sourceProfileLink" href="#" target="_blank" rel="noopener">ИСТОЧНИК</a>
+  </div>
+</section>
+
 <div class="detail" id="detail" hidden>
   <div>
     <img id="main" class="gallery-main" src="./assets/work1.svg">
@@ -93,7 +103,7 @@
 </div>
 
 <script src="./supabase-config.js"></script><script src="./tp-auth.js?v=2"></script>
-<script src="./tp-api.js"></script>
+<script src="./tp-api.js?v=public1"></script>
 <script>
 const n = new URLSearchParams(location.search).get("n");
 const loading = document.querySelector("#loading");
@@ -156,6 +166,18 @@ async function loadListing(){
   }
 
   currentListing = x;
+
+  const importedUnverified = x.profile_origin === "imported" && x.claim_status !== "verified";
+  const publicNotice = document.querySelector("#publicProfileNotice");
+  if(importedUnverified){
+    publicNotice.hidden = false;
+    document.querySelector("#claimProfileBtn").href = `./claim.html?n=${encodeURIComponent(x.public_no)}&mode=ownership`;
+    document.querySelector("#removeProfileBtn").href = `./claim.html?n=${encodeURIComponent(x.public_no)}&mode=removal`;
+    const source = document.querySelector("#sourceProfileLink");
+    if(x.source_url){ source.href=x.source_url; source.textContent=`ИСТОЧНИК${x.source_label?" · "+x.source_label:""}`; }
+    else { source.hidden=true; }
+  }
+
   document.title = (x.title || "Работа") + " — TATTOO PRICE";
   document.querySelector("#eyebrow").textContent =
     `${x.city || ""} · ${x.style || ""}`;
@@ -173,7 +195,8 @@ async function loadListing(){
   document.querySelector("#tags").innerHTML =
     `<span class="tag">${esc(x.city)}</span>` +
     `<span class="tag">${esc(x.style)}</span>` +
-    (x.plan === "pro" ? '<span class="tag featured">PRO</span>' : '<span class="tag">FREE</span>');
+    (x.plan === "pro" ? '<span class="tag featured">PRO</span>' : '<span class="tag">FREE</span>') +
+    (importedUnverified ? '<span class="tag" style="border-color:#8a4d31;color:#ffb68f">НЕ ПОДТВЕРЖДЁН</span>' : '');
 
   const sidecard = document.querySelector(".sidecard");
   sidecard.classList.toggle("highlight-plan", x.plan === "pro");

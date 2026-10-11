@@ -43,7 +43,34 @@
 <section id="adminPanel" hidden>
   <div class="dashboard-grid" id="dashboard"></div>
 
-  <div id="betaQuotaBar" class="beta-quota-bar" hidden></div>
+  <section class="panel" style="margin-bottom:14px">
+    <div class="eyebrow">ПУБЛИЧНЫЕ ПРОФИЛИ</div>
+    <h2 style="margin-top:6px">Импортировать профиль из открытого источника</h2>
+    <div class="muted" style="margin-bottom:12px">Для неподтверждённого профиля используем только профессиональные данные и одно фото. Ссылка на источник сохраняется и показывается посетителю.</div>
+    <div class="import-grid">
+      <input class="input" id="impMaster" placeholder="Имя / псевдоним мастера *">
+      <input class="input" id="impStudio" placeholder="Студия">
+      <input class="input" id="impCity" placeholder="Город *">
+      <input class="input" id="impStyle" placeholder="Стиль *">
+      <input class="input" id="impTitle" placeholder="Заголовок (можно пустым)">
+      <input class="input" id="impPrice" type="number" min="0" placeholder="Цена / ориентир">
+      <select class="select" id="impPriceType"><option value="negotiable">Цена по договорённости</option><option value="from">от</option><option value="fixed">фиксированная</option><option value="session">за сеанс</option><option value="hour">за час</option></select>
+      <input class="input" id="impSource" placeholder="Публичная страница-источник, например VK *">
+      <input class="input" id="impPhoto" placeholder="Прямая ссылка на ОДНО публичное фото *">
+      <input class="input" id="impVk" placeholder="VK мастера (если отличается от источника)">
+      <input class="input" id="impTelegram" placeholder="Telegram, если публично указан">
+      <input class="input" id="impWebsite" placeholder="Сайт, если публично указан">
+    </div>
+    <textarea class="input" id="impDescription" rows="3" style="margin-top:10px" placeholder="Короткое нейтральное описание своими словами — не копировать чужой текст дословно"></textarea>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px"><button class="btn" id="importProfileBtn">СОЗДАТЬ НЕПОДТВЕРЖДЁННЫЙ ПРОФИЛЬ</button><span class="muted" id="importProfileStatus">Фото будет сохранено в нашем Storage с указанием источника.</span></div>
+  </section>
+
+  <section class="panel" style="margin-bottom:14px">
+    <div class="eyebrow">ПОДТВЕРЖДЕНИЕ ВЛАДЕНИЯ</div>
+    <h2 style="margin-top:6px">Запросы мастеров</h2>
+    <div class="notice" id="claimsStatus" style="margin:10px 0">Загружаем…</div>
+    <div class="admin-list" id="claimsList"></div>
+  </section>
 
   <div class="test-cleanup" id="testCleanup">
     <div>
@@ -79,6 +106,6 @@
 </div>
 
 <script src="./supabase-config.js"></script>
-<script src="./admin.js?v=beta5"></script>
+<script src="./admin.js?v=public1"></script>
 </body>
 </html>

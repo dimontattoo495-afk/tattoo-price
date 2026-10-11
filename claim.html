@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Подтверждение профиля — TATTOO PRICE</title>
+<link rel="stylesheet" href="./styles.css">
+<style>
+.claim-shell{max-width:780px;margin:28px auto}.claim-code{font-size:34px;font-weight:900;letter-spacing:.08em;padding:18px;border:1px dashed #8a4d31;border-radius:14px;text-align:center;background:#171110}.steps{display:grid;gap:10px;margin-top:14px}.step{border:1px solid var(--line);border-radius:13px;padding:13px}.claim-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.claim-note{line-height:1.6}.hidden{display:none!important}
+</style>
+</head>
+<body><div class="wrap">
+<header class="top"><a class="logo" href="./index.html">TATTOO <b>PRICE</b></a><nav class="nav"><a href="./index.html">Работы</a><a href="./my.html">Мои объявления</a></nav></header>
+<section class="pagehead"><div class="eyebrow">ПРОФИЛЬ МАСТЕРА</div><h1 id="pageTitle">Подтверждение профиля</h1><div class="muted">Без паспорта: подтверждение через публичный аккаунт-источник.</div></section>
+<section class="panel claim-shell" id="box">
+  <div id="status" class="notice">Проверяем вход…</div>
+
+  <div id="loginNeeded" class="hidden">
+    <h2>Сначала войдите</h2>
+    <p class="muted claim-note">Запрос на подтверждение или удаление привязывается к вашему аккаунту TATTOO PRICE.</p>
+    <a class="btn" id="loginLink" href="./account.html">ВОЙТИ / ЗАРЕГИСТРИРОВАТЬСЯ</a>
+  </div>
+
+  <div id="claimArea" class="hidden">
+    <h2 id="claimHeading"></h2>
+    <p class="muted claim-note" id="claimIntro"></p>
+    <div class="claim-code" id="challengeCode">—</div>
+    <div class="steps">
+      <div class="step"><b>1.</b> Откройте публичную страницу-источник по кнопке ниже.</div>
+      <div class="step"><b>2.</b> Временно добавьте код выше в статус/описание публичной страницы. Достаточно на время проверки.</div>
+      <div class="step"><b>3.</b> Вернитесь сюда и отправьте запрос на проверку. Администратор откроет источник и проверит код.</div>
+    </div>
+    <div class="claim-actions">
+      <a class="btn secondary" id="sourceBtn" href="#" target="_blank" rel="noopener">ОТКРЫТЬ ИСТОЧНИК</a>
+      <button class="btn secondary" id="copyBtn" type="button">СКОПИРОВАТЬ КОД</button>
+    </div>
+    <div class="field" style="margin-top:16px"><label>ССЫЛКА, ГДЕ ВИДЕН КОД (НЕОБЯЗАТЕЛЬНО)</label><input class="input" id="evidenceUrl" placeholder="Можно оставить ссылку на тот же VK-профиль"></div>
+    <div class="field" style="margin-top:12px"><label>КОММЕНТАРИЙ (НЕОБЯЗАТЕЛЬНО)</label><textarea class="input" id="evidenceNote" rows="3" placeholder="Например: код добавлен в статус VK"></textarea></div>
+    <div class="claim-actions"><button class="btn" id="submitBtn" type="button">ОТПРАВИТЬ НА ПРОВЕРКУ</button><a class="btn secondary" href="./index.html">ОТМЕНА</a></div>
+  </div>
+
+  <div id="doneArea" class="hidden"><h2>Запрос отправлен</h2><p class="muted claim-note" id="doneText"></p><div class="claim-actions"><a class="btn" href="./my.html">МОИ ОБЪЯВЛЕНИЯ</a><a class="btn secondary" href="./index.html">НА ГЛАВНУЮ</a></div></div>
+</section>
+<footer class="footer"><div>TATTOO PRICE © 2026</div><a href="./privacy.html">Политика конфиденциальности</a><a href="./contacts.html">Контакты</a></footer>
+</div>
+<script src="./supabase-config.js"></script><script src="./tp-auth.js?v=2"></script>
+<script>
+const q=new URLSearchParams(location.search);const n=Number(q.get('n'));const mode=q.get('mode')==='removal'?'removal':'ownership';
+const statusEl=document.querySelector('#status'),loginNeeded=document.querySelector('#loginNeeded'),claimArea=document.querySelector('#claimArea'),doneArea=document.querySelector('#doneArea');
+let currentClaim=null;
+function setStatus(t){statusEl.textContent=t}
+async function api(body){const token=await TPAuth.getAccessToken();if(!token)throw Object.assign(new Error('AUTH'),{status:401});const r=await fetch(`${TP_CONFIG.supabaseUrl}/functions/v1/profile-claim`,{method:'POST',headers:{'Content-Type':'application/json','apikey':TP_CONFIG.publishableKey,'Authorization':`Bearer ${token}`},body:JSON.stringify(body)});const text=await r.text();let data={};try{data=text?JSON.parse(text):{}}catch{data={error:text}}if(!r.ok){const e=new Error(data.error||`HTTP ${r.status}`);e.status=r.status;throw e}return data}
+async function start(){if(!Number.isSafeInteger(n)||n<=0){setStatus('Не указан профиль.');return}const user=await TPAuth.getUser();if(!user){statusEl.classList.add('hidden');loginNeeded.classList.remove('hidden');document.querySelector('#loginLink').href=`./account.html?next=${encodeURIComponent(`claim.html?n=${n}&mode=${mode}`)}`;return}
+try{setStatus('Создаём запрос…');const r=await api({action:'start',public_no:n,claim_type:mode});if(r.already_verified){location.href='./my.html';return}currentClaim=r.claim;document.querySelector('#pageTitle').textContent=mode==='removal'?'Запросить удаление профиля':'Подтвердить владение профилем';document.querySelector('#claimHeading').textContent=mode==='removal'?'Подтверждение перед удалением':'Докажите, что публичный профиль принадлежит вам';document.querySelector('#claimIntro').textContent=mode==='removal'?'После подтверждения администратор удалит профиль и сохранённое фото из каталога.':'После подтверждения профиль будет привязан к вашему аккаунту. Вы сможете редактировать его и подключать PRO/Поднять.';document.querySelector('#challengeCode').textContent=currentClaim.challenge_code;const src=document.querySelector('#sourceBtn');src.href=currentClaim.source_url||'#';if(!currentClaim.source_url)src.classList.add('hidden');statusEl.classList.add('hidden');claimArea.classList.remove('hidden');if(currentClaim.status==='pending_review'){claimArea.classList.add('hidden');doneArea.classList.remove('hidden');document.querySelector('#doneText').textContent='Запрос уже находится на проверке. После подтверждения владения профиль появится в вашем личном кабинете; запрос на удаление приведёт к удалению профиля.'}}
+catch(e){setStatus('Ошибка: '+e.message)}}
+document.querySelector('#copyBtn').onclick=async()=>{try{await navigator.clipboard.writeText(currentClaim?.challenge_code||'');document.querySelector('#copyBtn').textContent='✓ СКОПИРОВАНО';setTimeout(()=>document.querySelector('#copyBtn').textContent='СКОПИРОВАТЬ КОД',1500)}catch{}};
+document.querySelector('#submitBtn').onclick=async()=>{if(!currentClaim)return;const b=document.querySelector('#submitBtn');b.disabled=true;b.textContent='ОТПРАВЛЯЕМ…';try{await api({action:'submit',claim_id:currentClaim.id,evidence_url:document.querySelector('#evidenceUrl').value.trim()||currentClaim.source_url||null,evidence_note:document.querySelector('#evidenceNote').value.trim()||null});claimArea.classList.add('hidden');doneArea.classList.remove('hidden');document.querySelector('#doneText').textContent=mode==='removal'?'Запрос на удаление отправлен. После проверки владения профиль будет удалён.':'Запрос отправлен. После проверки профиль будет привязан к вашему аккаунту и появится в «Моих объявлениях».'}catch(e){setStatus('Ошибка: '+e.message);statusEl.classList.remove('hidden');b.disabled=false;b.textContent='ОТПРАВИТЬ НА ПРОВЕРКУ'}};
+start();
+</script></body></html>

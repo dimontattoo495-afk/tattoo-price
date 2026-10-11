@@ -10,10 +10,12 @@ function card(x){
  const img=x.isDemo?x.img:(TP.photoUrl(x.cover_path)||"./assets/work1.svg");
  const href=x.isDemo?"#":`./listing.html?n=${encodeURIComponent(x.public_no)}`;
  const isPro=x.plan==="pro";
+ const unclaimed=x.profile_origin==="imported"&&x.claim_status!=="verified";
  return `<article class="card ${isPro?'highlight-card':''}">
  <a href="${href}" ${x.isDemo?'onclick="event.preventDefault()"':''}><img class="cover" src="${img}" alt="" loading="lazy"></a>
- <div class="cardbody"><div class="tags"><span class="tag">${esc(x.city)}</span><span class="tag">${esc(x.style)}</span>${isPro?'<span class="tag featured">PRO</span>':'<span class="tag">FREE</span>'}${x.isDemo?'<span class="tag">ДЕМО</span>':''}</div>
+ <div class="cardbody"><div class="tags"><span class="tag">${esc(x.city)}</span><span class="tag">${esc(x.style)}</span>${isPro?'<span class="tag featured">PRO</span>':'<span class="tag">FREE</span>'}${unclaimed?'<span class="tag" style="border-color:#8a4d31;color:#ffb68f">НЕ ПОДТВЕРЖДЁН</span>':''}${x.isDemo?'<span class="tag">ДЕМО</span>':''}</div>
  <div class="title">${esc(x.title)}</div><div class="price">${priceText(x)}</div>${isPro&&x.description?`<div class="desc">${esc(x.description)}</div>`:""}
+ ${unclaimed?'<div class="desc" style="margin-top:8px">Профиль создан по открытым профессиональным данным. Владелец может подтвердить профиль или запросить удаление.</div>':''}
  <div class="card-metrics"><span>♡ ${Number(x.likes||0)}</span><span>👁 ${Number(x.views||0)}</span></div>
  <div class="master"><strong>${esc(x.master_name)}</strong>${x.isDemo?'':`<a class="btn secondary" href="${href}">Смотреть</a>`}</div></div></article>`;
 }
