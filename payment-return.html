@@ -45,7 +45,8 @@
 </div>
 
 <script src="./supabase-config.js"></script>
-<script src="./tp-api-payments.js?v=3"></script>
+<script src="./tp-auth.js?v=1"></script>
+<script src="./tp-api-payments.js?v=5"></script>
 <script>
 const q = new URLSearchParams(location.search);
 const publicNo = q.get("n");
@@ -75,14 +76,13 @@ async function check(){
     return;
   }
 
-  const ownerKey = localStorage.getItem(`tp_owner_${publicNo}`);
+  const ownerKey = localStorage.getItem(`tp_owner_${publicNo}`) || "";
+  const accountUser = await TPAuth.getUser();
 
-  if(!ownerKey){
-    heading.textContent =
-      returnedStatus === "fail" ? "Оплата не завершена" : "Платёж обработан";
+  if(!ownerKey && !accountUser){
+    heading.textContent = returnedStatus === "fail" ? "Оплата не завершена" : "Платёж обработан";
     message.textContent = "";
-    state.textContent =
-      "Откройте «Мои объявления» в том же браузере, в котором создавали публикацию.";
+    state.innerHTML = 'Войдите в <a href="./account.html?next=my.html">аккаунт мастера</a>, чтобы проверить платёж.';
     return;
   }
 
@@ -97,7 +97,8 @@ async function check(){
       let p = null;
 
       if(orderId){
-        p = await TP.getOwnerPaymentStatus(publicNo, ownerKey, orderId);
+        if(accountUser) p = await TP.getAccountPaymentStatus(publicNo, orderId);
+        else p = await TP.getOwnerPaymentStatus(publicNo, ownerKey, orderId);
       }
 
       if(p?.payment_status === "succeeded"){
@@ -130,7 +131,7 @@ async function check(){
       }
 
       // Fallback for older return URLs without order id.
-      if(!orderId){
+      if(!orderId && ownerKey){
         const x = await TP.getOwnerStatus(publicNo, ownerKey);
         if(mode === "initial" && x?.payment_status === "paid"){
           heading.textContent = "Оплата прошла";
