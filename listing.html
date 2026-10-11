@@ -12,7 +12,7 @@
   <a class="logo" href="./index.html">TATTOO <b>PRICE</b></a>
   <nav class="nav">
     <a href="./index.html">Все работы</a>
-    <a href="./account.html">Войти / кабинет</a>
+    <a id="accountNavLink" href="./account.html">Войти / кабинет</a>
     <a class="primary" href="./publish.html">Разместить работу</a>
   </nav>
 </header>
@@ -92,7 +92,7 @@
 </footer>
 </div>
 
-<script src="./supabase-config.js"></script>
+<script src="./supabase-config.js"></script><script src="./tp-auth.js?v=2"></script>
 <script src="./tp-api.js"></script>
 <script>
 const n = new URLSearchParams(location.search).get("n");
@@ -294,6 +294,27 @@ likeBtn.addEventListener("click", async () => {
     await loadListing();
   }catch(e){
     loading.textContent = e.message;
+  }
+})();
+</script>
+
+<script>
+(async function(){
+  const link = document.getElementById('accountNavLink');
+  if(!link || !window.TPAuth) return;
+  try{
+    const user = await TPAuth.getUser();
+    if(user){
+      link.href = './my.html';
+      link.textContent = 'Мои объявления';
+      link.title = user.email || 'Кабинет мастера';
+    }else{
+      link.href = './account.html';
+      link.textContent = 'Войти / кабинет';
+      link.removeAttribute('title');
+    }
+  }catch(e){
+    console.warn('auth nav', e);
   }
 })();
 </script>

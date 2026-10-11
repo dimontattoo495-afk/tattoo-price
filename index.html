@@ -11,7 +11,7 @@
 <div class="wrap">
 <header class="top">
   <a class="logo" href="./index.html">TATTOO <b>PRICE</b></a>
-  <nav class="nav"><a href="#works">Работы</a><a href="./account.html">Войти / кабинет</a><a href="./publish.html" class="primary">Разместить бесплатно</a></nav>
+  <nav class="nav"><a href="#works">Работы</a><a id="accountNavLink" href="./account.html">Войти / кабинет</a><a href="./publish.html" class="primary">Разместить бесплатно</a></nav>
 </header>
 
 <section class="hero">
@@ -54,5 +54,26 @@
 
 <footer class="footer"><div>TATTOO PRICE © 2026</div><a href="./about.html">О сервисе</a><a href="./rules.html">Правила размещения</a><a href="./payment.html">Оплата и возврат</a><a href="./offer.html">Публичная оферта</a><a href="./privacy.html">Политика конфиденциальности</a><a href="./contacts.html">Контакты и реквизиты</a></footer>
 </div>
-<script src="./supabase-config.js"></script><script src="./tp-api.js"></script><script src="./app-live.js"></script>
+<script src="./supabase-config.js"></script><script src="./tp-auth.js?v=2"></script><script src="./tp-api.js"></script><script src="./app-live.js"></script>
+
+<script>
+(async function(){
+  const link = document.getElementById('accountNavLink');
+  if(!link || !window.TPAuth) return;
+  try{
+    const user = await TPAuth.getUser();
+    if(user){
+      link.href = './my.html';
+      link.textContent = 'Мои объявления';
+      link.title = user.email || 'Кабинет мастера';
+    }else{
+      link.href = './account.html';
+      link.textContent = 'Войти / кабинет';
+      link.removeAttribute('title');
+    }
+  }catch(e){
+    console.warn('auth nav', e);
+  }
+})();
+</script>
 </body></html>
