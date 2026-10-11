@@ -5,6 +5,29 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Работа мастера — TATTOO PRICE</title>
 <link rel="stylesheet" href="./styles.css">
+<meta name="description" content="Профиль тату-мастера: город, стиль, ориентир по цене, фотографии работ и прямые контакты.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+
+<link id="canonicalLink" rel="canonical" href="https://price.smoke-tattoo.ru/listing.html">
+<meta id="ogTitle" property="og:title" content="Тату-мастер — TATTOO PRICE">
+<meta id="ogDescription" property="og:description" content="Профиль тату-мастера: работы, цены и контакты.">
+<meta id="ogUrl" property="og:url" content="https://price.smoke-tattoo.ru/listing.html">
+<meta id="ogImage" property="og:image" content="https://price.smoke-tattoo.ru/assets/work1.svg">
+<meta property="og:type" content="profile">
+<meta property="og:site_name" content="TATTOO PRICE">
+<meta name="twitter:card" content="summary_large_image">
+<script id="profileStructuredData" type="application/ld+json">{}</script>
+<script>
+(function(){
+  const p = new URLSearchParams(location.search);
+  const no = p.get("n");
+  if(no && /^\d+$/.test(no)){
+    const u = "https://price.smoke-tattoo.ru/listing.html?n=" + encodeURIComponent(no);
+    document.getElementById("canonicalLink").href = u;
+    document.getElementById("ogUrl").content = u;
+  }
+})();
+</script>
 </head>
 <body>
 <div class="wrap">
@@ -178,7 +201,26 @@ async function loadListing(){
     else { source.hidden=true; }
   }
 
-  document.title = (x.title || "Работа") + " — TATTOO PRICE";
+  const canonicalUrl = `https://price.smoke-tattoo.ru/listing.html?n=${encodeURIComponent(x.public_no)}`;
+  const seoTitle = `${x.master_name || x.title || "Тату-мастер"} — тату-мастер${x.city ? ", " + x.city : ""} | TATTOO PRICE`;
+  const seoDescription = [
+    `Профиль тату-мастера ${x.master_name || ""}${x.city ? " в городе " + x.city : ""}.`,
+    x.style ? `Стиль: ${x.style}.` : "",
+    `Цена: ${priceText(x)}.`,
+    "Фото работ и прямые контакты на TATTOO PRICE."
+  ].filter(Boolean).join(" ");
+
+  document.title = seoTitle;
+  const descMeta = document.querySelector('meta[name="description"]');
+  if(descMeta) descMeta.content = seoDescription;
+  const canonical = document.querySelector("#canonicalLink");
+  if(canonical) canonical.href = canonicalUrl;
+  const ogTitle = document.querySelector("#ogTitle");
+  const ogDescription = document.querySelector("#ogDescription");
+  const ogUrl = document.querySelector("#ogUrl");
+  if(ogTitle) ogTitle.content = seoTitle;
+  if(ogDescription) ogDescription.content = seoDescription;
+  if(ogUrl) ogUrl.content = canonicalUrl;
   document.querySelector("#eyebrow").textContent =
     `${x.city || ""} · ${x.style || ""}`;
 
@@ -217,6 +259,34 @@ async function loadListing(){
       img.onclick = () => main.src = img.src
     );
   }
+
+  const primaryImage = photos.length ? TP.photoUrl(photos[0].storage_path) : "https://price.smoke-tattoo.ru/assets/work1.svg";
+  const ogImage = document.querySelector("#ogImage");
+  if(ogImage) ogImage.content = primaryImage;
+
+  const sameAs = [x.telegram_url, x.vk_url, x.website_url].filter(Boolean);
+  const sd = {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    "url": canonicalUrl,
+    "name": seoTitle,
+    "description": seoDescription,
+    "mainEntity": {
+      "@type": "Person",
+      "name": x.master_name || x.title || "Тату-мастер",
+      "jobTitle": "Тату-мастер",
+      "description": x.description || seoDescription,
+      "image": primaryImage,
+      "sameAs": sameAs,
+      "address": x.city ? {
+        "@type": "PostalAddress",
+        "addressLocality": x.city,
+        "addressCountry": "RU"
+      } : undefined
+    }
+  };
+  const sdEl = document.querySelector("#profileStructuredData");
+  if(sdEl) sdEl.textContent = JSON.stringify(sd);
 
   const social = [];
 
