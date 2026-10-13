@@ -1,1 +1,93 @@
-function getSb(){if(window.supabaseClient)return window.supabaseClient;if(window.sb)return window.sb;if(window.supabase&&window.SUPABASE_URL&&window.SUPABASE_ANON_KEY)return window.supabase.createClient(window.SUPABASE_URL,window.SUPABASE_ANON_KEY);return null}async function submitRent(e){e.preventDefault();let sb=getSb(),m=document.querySelector('#msg');if(!sb){m.textContent='Не найден Supabase-клиент сайта.';return}let {data:{user}}=await sb.auth.getUser();if(!user){m.innerHTML='Сначала войдите: <a href="account.html">Войти</a>';return}let f=new FormData(e.target),photos=(f.get('photos')||'').split(/\s+/).filter(Boolean).slice(0,8),row={user_id:user.id,status:'paid_review',listing_mode:f.get('listing_mode'),rent_type:f.get('rent_type'),title:f.get('title'),city:f.get('city'),district:f.get('district')||null,metro:f.get('metro')||null,address_text:f.get('address_text')||null,price_day:+f.get('price_day')||null,price_week:+f.get('price_week')||null,price_month:+f.get('price_month')||null,description:f.get('description')||null,included:f.get('included')||null,conditions:f.get('conditions')||null,contact_name:f.get('contact_name')||null,contact_phone:f.get('contact_phone')||null,contact_telegram:f.get('contact_telegram')||null,contact_vk:f.get('contact_vk')||null,photos};let {data,error}=await sb.from('tp_rent_listings').insert(row).select('public_no').single();m.textContent=error?'Ошибка: '+error.message:'Готово. Объявление №'+data.public_no+' отправлено на модерацию.';if(!error)e.target.reset()}
+(function(){
+  const C = window.TP_CONFIG;
+
+  function esc(s=''){
+    return String(s).replace(/[&<>"']/g,m=>({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[m]));
+  }
+
+  async function submitRent(e){
+    e.preventDefault();
+    const msg=document.querySelector('#msg');
+    msg.className='notice';
+    msg.textContent='Проверяем аккаунт…';
+
+    try{
+      if(!C?.supabaseUrl || !C?.publishableKey) throw new Error('Не загружен supabase-config.js');
+      if(!window.TPAuth) throw new Error('Не загружен tp-auth.js');
+
+      const user=await TPAuth.getUser();
+      if(!user){
+        msg.innerHTML='Сначала войдите в аккаунт Tattoo Price: <a href="account.html?next=rent-publish.html">Войти</a>';
+        return;
+      }
+
+      const token=await TPAuth.getAccessToken();
+      if(!token) throw new Error('Сессия закончилась. Войдите в аккаунт ещё раз.');
+
+      const f=new FormData(e.target);
+      const photos=(f.get('photos')||'')
+        .split(/\r?\n|\s+(?=https?:\/\/)/)
+        .map(x=>x.trim())
+        .filter(Boolean)
+        .slice(0,8);
+
+      const row={
+        user_id:user.id,
+        status:'paid_review',
+        listing_mode:f.get('listing_mode'),
+        rent_type:f.get('rent_type'),
+        title:String(f.get('title')||'').trim(),
+        city:String(f.get('city')||'').trim(),
+        district:String(f.get('district')||'').trim()||null,
+        metro:String(f.get('metro')||'').trim()||null,
+        address_text:String(f.get('address_text')||'').trim()||null,
+        price_day:Number(f.get('price_day'))||null,
+        price_week:Number(f.get('price_week'))||null,
+        price_month:Number(f.get('price_month'))||null,
+        description:String(f.get('description')||'').trim()||null,
+        included:String(f.get('included')||'').trim()||null,
+        conditions:String(f.get('conditions')||'').trim()||null,
+        contact_name:String(f.get('contact_name')||'').trim()||null,
+        contact_phone:String(f.get('contact_phone')||'').trim()||null,
+        contact_telegram:String(f.get('contact_telegram')||'').trim()||null,
+        contact_vk:String(f.get('contact_vk')||'').trim()||null,
+        photos
+      };
+
+      if(!row.title || !row.city) throw new Error('Заполните город и заголовок.');
+
+      msg.textContent='Отправляем на модерацию…';
+
+      const r=await fetch(`${C.supabaseUrl}/rest/v1/tp_rent_listings`,{
+        method:'POST',
+        headers:{
+          'apikey':C.publishableKey,
+          'Authorization':`Bearer ${token}`,
+          'Content-Type':'application/json',
+          'Prefer':'return=representation'
+        },
+        body:JSON.stringify(row)
+      });
+
+      const text=await r.text();
+      let data=null;
+      try{data=text?JSON.parse(text):null}catch{data=text}
+      if(!r.ok){
+        throw new Error(data?.message||data?.hint||data?.details||text||`HTTP ${r.status}`);
+      }
+
+      const item=Array.isArray(data)?data[0]:data;
+      msg.className='notice ok';
+      msg.innerHTML=`Готово. Объявление <b>№${esc(item?.public_no||'')}</b> отправлено на модерацию.`;
+      e.target.reset();
+    }catch(err){
+      console.error(err);
+      msg.className='notice';
+      msg.textContent='Ошибка: '+err.message;
+    }
+  }
+
+  window.submitRent=submitRent;
+})();
