@@ -23,7 +23,7 @@
 <section class="pagehead">
   <div class="eyebrow">ПАНЕЛЬ УПРАВЛЕНИЯ</div>
   <h1>Админка TATTOO PRICE</h1>
-  <div class="muted">Оплаты, модерация, сроки публикаций и тестовые данные.</div>
+  <div class="muted">Оплаты, модерация, аренда, сроки публикаций и тестовые данные.</div>
 </section>
 
 <section id="loginPanel" class="panel login-panel">
@@ -45,39 +45,10 @@
 <section id="adminPanel" hidden>
   <div class="dashboard-grid" id="dashboard"></div>
 
-  <section class="panel" style="margin-bottom:14px">
-    <div class="eyebrow">ПУБЛИЧНЫЕ ПРОФИЛИ</div>
-    <h2 style="margin-top:6px">Импортировать профиль из открытого источника</h2>
-    <div class="muted" style="margin-bottom:12px">Для неподтверждённого профиля используем только профессиональные данные и одно фото. Ссылка на источник сохраняется и показывается посетителю.</div>
-    <div class="import-grid">
-      <input class="input" id="impMaster" placeholder="Имя / псевдоним мастера *">
-      <input class="input" id="impStudio" placeholder="Студия">
-      <input class="input" id="impCity" placeholder="Город *">
-      <input class="input" id="impStyle" placeholder="Стиль *">
-      <input class="input" id="impTitle" placeholder="Заголовок (можно пустым)">
-      <input class="input" id="impPrice" type="number" min="0" placeholder="Цена / ориентир">
-      <select class="select" id="impPriceType"><option value="negotiable">Цена по договорённости</option><option value="from">от</option><option value="fixed">фиксированная</option><option value="session">за сеанс</option><option value="hour">за час</option></select>
-      <input class="input" id="impSource" placeholder="Публичная страница-источник, например VK *">
-      <input class="input" id="impPhoto" placeholder="Прямая ссылка на ОДНО публичное фото *">
-      <input class="input" id="impVk" placeholder="VK мастера (если отличается от источника)">
-      <input class="input" id="impTelegram" placeholder="Telegram, если публично указан">
-      <input class="input" id="impWebsite" placeholder="Сайт, если публично указан">
-    </div>
-    <textarea class="input" id="impDescription" rows="3" style="margin-top:10px" placeholder="Короткое нейтральное описание своими словами — не копировать чужой текст дословно"></textarea>
-    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px"><button class="btn" id="importProfileBtn">СОЗДАТЬ НЕПОДТВЕРЖДЁННЫЙ ПРОФИЛЬ</button><span class="muted" id="importProfileStatus">Фото будет сохранено в нашем Storage с указанием источника.</span></div>
-  </section>
-
-  <section class="panel" style="margin-bottom:14px">
-    <div class="eyebrow">ПОДТВЕРЖДЕНИЕ ВЛАДЕНИЯ</div>
-    <h2 style="margin-top:6px">Запросы мастеров</h2>
-    <div class="notice" id="claimsStatus" style="margin:10px 0">Загружаем…</div>
-    <div class="admin-list" id="claimsList"></div>
-  </section>
-
-
   <section class="panel" style="margin-bottom:14px" id="rentAdminSection">
     <div class="eyebrow">АРЕНДА</div>
     <h2 style="margin-top:6px">Объявления аренды</h2>
+
     <div class="admin-toolbar" style="margin-top:10px">
       <div class="toolbar-actions">
         <select class="select" id="rentStatusFilter">
@@ -90,7 +61,11 @@
         <button class="btn secondary" id="rentRefreshBtn">Обновить аренду</button>
       </div>
     </div>
-    <div class="notice" id="rentAdminStatus" style="margin:10px 0">Загружаем…</div>
+
+    <div class="notice" id="rentAdminStatus" style="margin:10px 0">
+      Загружаем…
+    </div>
+
     <div class="admin-list" id="rentAdminList"></div>
   </section>
 
@@ -99,13 +74,16 @@
       <b>Тестовые данные</b>
       <div class="muted small" id="testCleanupText">Проверяем…</div>
     </div>
-    <button class="btn danger" id="cleanupTestBtn" disabled>Удалить тестовые</button>
+    <button class="btn danger" id="cleanupTestBtn" disabled>
+      Удалить тестовые
+    </button>
   </div>
 
   <div class="admin-toolbar">
     <div class="toolbar-search">
       <input class="input" id="searchInput" placeholder="Поиск: №, мастер, город, заголовок…">
     </div>
+
     <div class="toolbar-actions">
       <select class="select" id="statusFilter">
         <option value="">Все статусы</option>
@@ -116,19 +94,57 @@
         <option value="rejected">Отклонено</option>
         <option value="expired">Истекло</option>
       </select>
-      <button class="btn secondary" id="refreshBtn">Обновить</button>
+
+      <button class="btn secondary" id="refreshBtn">
+        Обновить
+      </button>
     </div>
   </div>
 
-  <div id="adminStatus" class="notice" style="margin:12px 0">Загрузка…</div>
+  <div id="adminStatus" class="notice" style="margin:12px 0">
+    Загрузка…
+  </div>
+
   <div id="listings" class="admin-list"></div>
 </section>
 
-<footer class="footer">TATTOO PRICE · Admin Final</footer>
+<footer class="footer">TATTOO PRICE · Admin</footer>
 </div>
 
 <script src="./supabase-config.js"></script>
 <script src="./admin.js?v=public1"></script>
-<script src="./admin-rent-addon.js?v=12"></script>
+<script src="./admin-rent-addon.js?v=13"></script>
+
+<script>
+/*
+  Cleanup UI:
+  the old admin.js still knows how to work with imported profiles/claims,
+  but these controls are no longer shown in the admin interface.
+  Also remove the two old dashboard counters if admin.js renders them.
+*/
+(function(){
+  const unwanted = new Set([
+    'Публичных профилей',
+    'Запросов на проверку'
+  ]);
+
+  function cleanDashboard(){
+    const root = document.getElementById('dashboard');
+    if(!root) return;
+
+    root.querySelectorAll('.dash-card').forEach(card => {
+      const label = card.querySelector('.k')?.textContent?.trim() || '';
+      if(unwanted.has(label)) card.remove();
+    });
+  }
+
+  const root = document.getElementById('dashboard');
+  if(root){
+    const obs = new MutationObserver(cleanDashboard);
+    obs.observe(root, {childList:true, subtree:true});
+    cleanDashboard();
+  }
+})();
+</script>
 </body>
 </html>
