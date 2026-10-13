@@ -9,7 +9,7 @@
 <section class="cab-section"><div class="cab-head"><div><div class="eyebrow">АРЕНДА</div><h2>Мои объявления аренды</h2></div><a class="btn secondary" href="./rent-publish.html">+ Разместить аренду</a></div><div id="rentStatus" class="notice">Загружаем аренду…</div><div id="rentList" class="owner-grid" style="margin-top:14px"></div></section>
 
 <footer class="footer"><div>TATTOO PRICE © 2026</div><a href="./rent.html">Аренда</a><a href="./about.html">О сервисе</a><a href="./rules.html">Правила размещения</a><a href="./payment.html">Оплата и возврат</a><a href="./offer.html">Публичная оферта</a><a href="./privacy.html">Политика конфиденциальности</a><a href="./contacts.html">Контакты и реквизиты</a></footer></div>
-<script src="./supabase-config.js"></script><script src="./tp-auth.js?v=2"></script><script src="./tp-api-payments.js?v=5"></script><script>
+<script src="./supabase-config.js"></script><script src="./tp-auth.js?v=2"></script><script src="./tp-api-payments.js?v=5"></script><script src="./rent-payments.js?v=1"></script><script>
 const list=document.querySelector('#list'),statusBox=document.querySelector('#status'),rentList=document.querySelector('#rentList'),rentStatus=document.querySelector('#rentStatus');
 const statusNames={pending_payment:'Ожидает оплаты',paid_review:'На модерации',published:'Опубликовано',hidden:'Скрыто',expired:'Срок закончился',rejected:'Отклонено',draft:'Черновик'};
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
@@ -21,7 +21,37 @@ window.pay=async function(no,mode){statusBox.textContent=mode==='boost'?'Соз�
 
 function rentPrice(x){if(x.price_day)return new Intl.NumberFormat('ru-RU').format(x.price_day)+' ₽ / день';if(x.price_month)return new Intl.NumberFormat('ru-RU').format(x.price_month)+' ₽ / месяц';if(x.price_week)return new Intl.NumberFormat('ru-RU').format(x.price_week)+' ₽ / неделю';return 'Цена по договорённости';}
 function rentType(x){return ({workplace:'Рабочее место',guest_spot:'Guest spot',cabinet:'Кабинет',studio:'Студия целиком'})[x.rent_type]||x.rent_type||'—';}
-function rentCard(x){const isPro=x.plan==='pro'&&(!x.pro_until||new Date(x.pro_until)>new Date());return `<article class="owner-card rent-card"><div class="owner-head"><div><div class="small">Объявление №${Number(x.public_no)}</div><div class="owner-title">${esc(x.title||'Без названия')}</div><div class="owner-meta"><span class="tag">${x.listing_mode==='wanted'?'Ищу':'Сдаю'}</span><span class="tag">${esc(rentType(x))}</span><span class="tag">${esc(x.city||'—')}</span>${x.metro?`<span class="tag">м. ${esc(x.metro)}</span>`:''}<span class="tag">${isPro?'PRO':'FREE'}</span><span class="tag">${esc(statusNames[x.status]||x.status)}</span></div></div><div style="font-weight:900">${rentPrice(x)}</div></div><div class="owner-info"><div><small>Статус</small><b>${esc(statusNames[x.status]||x.status)}</b></div><div><small>Тариф</small><b>${isPro?'PRO':'FREE'}</b></div><div><small>Размещение</small><b>${isPro&&x.pro_until?'до '+dateText(x.pro_until):'FREE · без срока'}</b></div></div><div class="owner-actions">${x.status==='published'?`<a class="btn secondary" href="./rent-view.html?n=${Number(x.public_no)}">Открыть</a>`:''}${x.status==='paid_review'?'<span class="muted">Объявление ожидает модерации.</span>':''}${!isPro?'<span class="muted">PRO 200 ₽ и «Поднять» 50 ₽ для аренды подключим отдельным платёжным обновлением.</span>':''}</div></article>`;}
+function rentProActive(x){
+  if(x.plan!=='pro')return false;
+  if(x.status!=='published'&&!x.pro_until)return true;
+  return x.pro_until?new Date(x.pro_until)>new Date():false;
+}
+function rentCard(x){
+  const pro=rentProActive(x),no=Number(x.public_no);
+  let actions=`<a class="btn secondary" href="./rent-edit.html?n=${no}">Редактировать</a>`;
+  if(x.status==='published'){
+    actions+=`<a class="btn secondary" href="./rent-view.html?n=${no}">Открыть</a>`;
+    actions+=`<button class="btn secondary" onclick="rentPay(${no},'boost')">Поднять · 50 ₽</button>`;
+  }
+  if((x.status==='published'||x.status==='paid_review')&&!pro){
+    actions+=`<button class="btn" onclick="rentPay(${no},'upgrade')">Подключить PRO · 200 ₽</button>`;
+  }
+  if(x.status==='published'&&pro){
+    actions+=`<button class="btn" onclick="rentPay(${no},'renewal')">Продлить PRO · 200 ₽</button>`;
+  }
+  if(x.status==='paid_review') actions+=`<span class="muted"> Ожидает модерации.</span>`;
+
+  const term=pro?(x.pro_until?'до '+dateText(x.pro_until):'30 дней начнутся после публикации'):'FREE · без срока';
+  return `<article class="owner-card rent-card"><div class="owner-head"><div><div class="small">Объявление №${no}</div><div class="owner-title">${esc(x.title||'Без названия')}</div><div class="owner-meta"><span class="tag">${x.listing_mode==='wanted'?'Ищу':'Сдаю'}</span><span class="tag">${esc(rentType(x))}</span><span class="tag">${esc(x.city||'—')}</span>${x.metro?`<span class="tag">м. ${esc(x.metro)}</span>`:''}<span class="tag">${pro?'PRO':'FREE'}</span><span class="tag">${esc(statusNames[x.status]||x.status)}</span></div></div><div style="font-weight:900">${rentPrice(x)}</div></div><div class="owner-info"><div><small>Статус</small><b>${esc(statusNames[x.status]||x.status)}</b></div><div><small>Тариф</small><b>${pro?'PRO · 200 ₽':'FREE · 0 ₽'}</b></div><div><small>Размещение</small><b>${term}</b></div></div><div class="owner-actions">${actions}</div></article>`;
+}
+window.rentPay=async function(no,mode){
+  rentStatus.textContent=mode==='boost'?'Создаём платёж на поднятие…':mode==='renewal'?'Создаём платёж на продление PRO…':'Создаём платёж PRO…';
+  try{
+    const r=await TPRentPay.createPayment(no,mode);
+    if(!r.payment_url)throw new Error('Т-Банк не вернул ссылку на оплату');
+    location.href=r.payment_url;
+  }catch(e){rentStatus.textContent='Ошибка оплаты аренды: '+e.message;}
+};
 async function loadRentMine(){try{const rows=await TP.authRpc('tp_get_my_rent_listings',{});rentStatus.textContent=rows?.length?`Найдено объявлений аренды: ${rows.length}`:'У вас пока нет объявлений аренды.';rentList.innerHTML=(rows||[]).map(rentCard).join('')||'<div class="empty-box"><a class="btn secondary" href="./rent-publish.html">РАЗМЕСТИТЬ АРЕНДУ БЕСПЛАТНО</a></div>';}catch(e){rentStatus.textContent='Не удалось загрузить аренду: '+e.message;}}
 async function load(){const user=await TPAuth.getUser();if(!user){location.href='./account.html?next=my.html';return;}document.querySelector('#who').textContent=`${user.email||'Аккаунт'} · здесь показываются и карточки мастера, и объявления аренды`;for(const it of ownerItems()){try{await TP.claimListing(it.publicNo,it.ownerKey);}catch(e){}}await Promise.all([(async()=>{try{const rows=await TP.getMyAccountListings();statusBox.textContent=rows?.length?`Найдено работ: ${rows.length}`:'В аккаунте пока нет карточек мастера.';list.innerHTML=(rows||[]).map(card).join('')||'<div class="empty-box"><a class="btn" href="./publish.html">РАЗМЕСТИТЬ ПЕРВУЮ РАБОТУ</a></div>';}catch(e){statusBox.textContent='Не удалось загрузить работы: '+e.message;}})(),loadRentMine()]);}
 document.querySelector('#logoutBtn').onclick=async()=>{await TPAuth.signOut();location.href='./account.html';};load();

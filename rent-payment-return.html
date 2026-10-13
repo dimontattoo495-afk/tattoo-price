@@ -1,0 +1,33 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Оплата аренды — TATTOO PRICE</title><link rel="stylesheet" href="./styles.css"><meta name="robots" content="noindex,nofollow,noarchive"></head><body><div class="wrap">
+<header class="top"><a class="logo" href="./index.html">TATTOO <b>PRICE</b></a><nav class="nav"><a href="./my.html">Мои объявления</a><a href="./rent.html">Аренда</a></nav></header>
+<section class="pagehead"><div class="eyebrow">Т-БАНК · АРЕНДА</div><h1 id="heading">Проверяем оплату</h1><div class="muted" id="message">Получаем подтверждение платежа…</div></section>
+<section class="panel" style="max-width:700px"><div id="paymentState" class="notice">Подождите несколько секунд.</div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px"><a class="btn" href="./my.html">МОИ ОБЪЯВЛЕНИЯ</a><a class="btn secondary" href="./rent.html">АРЕНДА</a></div></section></div>
+<script src="./supabase-config.js"></script><script src="./tp-auth.js?v=2"></script><script src="./rent-payments.js?v=1"></script>
+<script>
+const q=new URLSearchParams(location.search),publicNo=q.get("n"),returned=q.get("status"),mode=q.get("mode")||"upgrade",orderId=q.get("order");
+const state=document.querySelector("#paymentState"),heading=document.querySelector("#heading"),message=document.querySelector("#message");
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const dateText=v=>v?new Date(v).toLocaleString("ru-RU"):"";
+async function check(){
+  if(!publicNo||!orderId){heading.textContent="Не удалось определить платёж";state.textContent="Вернитесь в личный кабинет.";return}
+  if(!(await TPAuth.getUser())){location.href="./account.html?next=my.html";return}
+  if(returned==="fail"){heading.textContent="Оплата не прошла";message.textContent="Можно попробовать снова из личного кабинета."}
+  for(let i=0;i<12;i++){
+    try{
+      const p=await TPRentPay.getPaymentStatus(publicNo,orderId);
+      if(p.payment_status==="succeeded"){
+        if(p.payment_kind==="boost"){heading.textContent="Объявление поднято";message.textContent="Платёж подтверждён. Объявление поднято в выдаче.";state.innerHTML=`Аренда №<b>${p.public_no}</b>.`;}
+        else if(p.payment_kind==="renewal"){heading.textContent="PRO продлён";message.textContent="PRO продлён ещё на 30 дней.";state.innerHTML=`Аренда №<b>${p.public_no}</b> · PRO до <b>${dateText(p.pro_until)}</b>.`;}
+        else{heading.textContent="PRO подключён";message.textContent=p.listing_status==="published"?"PRO активирован на 30 дней.":"PRO оплачен. Срок 30 дней начнётся после публикации модератором.";state.innerHTML=`Аренда №<b>${p.public_no}</b>.`;}
+        return;
+      }
+      if(["failed","canceled","refunded"].includes(String(p.payment_status))){heading.textContent="Оплата не завершена";message.textContent="Платная функция не применена.";state.textContent=`Аренда №${publicNo}.`;return}
+      state.textContent=`Ждём подтверждение Т-Банка… попытка ${i+1}/12`;
+    }catch(e){console.error(e);state.textContent="Проверяем платёж…"}
+    await sleep(2000);
+  }
+  heading.textContent="Платёж обрабатывается";message.textContent="Не создавайте повторный платёж сразу. Проверьте статус в личном кабинете.";state.textContent=`Аренда №${publicNo}.`;
+}
+check();
+</script></body></html>
