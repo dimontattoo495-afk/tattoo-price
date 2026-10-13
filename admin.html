@@ -28,18 +28,10 @@
 
 <section id="loginPanel" class="panel login-panel">
   <h2>Вход администратора</h2>
-  <div class="field">
-    <label>EMAIL</label>
-    <input class="input" id="email" type="email" value="dimontatoo@yandex.ru" autocomplete="username">
-  </div>
-  <div class="field">
-    <label>ПАРОЛЬ</label>
-    <input class="input" id="password" type="password" autocomplete="current-password">
-  </div>
+  <div class="field"><label>EMAIL</label><input class="input" id="email" type="email" value="dimontatoo@yandex.ru" autocomplete="username"></div>
+  <div class="field"><label>ПАРОЛЬ</label><input class="input" id="password" type="password" autocomplete="current-password"></div>
   <button class="btn full" id="loginBtn">ВОЙТИ</button>
-  <div class="notice" id="loginStatus" style="margin-top:12px">
-    Вход защищён Supabase Authentication.
-  </div>
+  <div class="notice" id="loginStatus" style="margin-top:12px">Вход защищён Supabase Authentication.</div>
 </section>
 
 <section id="adminPanel" hidden>
@@ -48,63 +40,34 @@
   <section class="panel" style="margin-bottom:14px" id="rentAdminSection">
     <div class="eyebrow">АРЕНДА</div>
     <h2 style="margin-top:6px">Объявления аренды</h2>
-
     <div class="admin-toolbar" style="margin-top:10px">
       <div class="toolbar-actions">
         <select class="select" id="rentStatusFilter">
-          <option value="paid_review">На модерации</option>
-          <option value="">Все статусы</option>
-          <option value="published">Опубликовано</option>
-          <option value="hidden">Скрыто</option>
-          <option value="rejected">Отклонено</option>
+          <option value="paid_review">На модерации</option><option value="">Все статусы</option><option value="published">Опубликовано</option><option value="hidden">Скрыто</option><option value="rejected">Отклонено</option>
         </select>
         <button class="btn secondary" id="rentRefreshBtn">Обновить аренду</button>
       </div>
     </div>
-
-    <div class="notice" id="rentAdminStatus" style="margin:10px 0">
-      Загружаем…
-    </div>
-
+    <div class="notice" id="rentAdminStatus" style="margin:10px 0">Загружаем…</div>
     <div class="admin-list" id="rentAdminList"></div>
   </section>
 
   <div class="test-cleanup" id="testCleanup">
-    <div>
-      <b>Тестовые данные</b>
-      <div class="muted small" id="testCleanupText">Проверяем…</div>
-    </div>
-    <button class="btn danger" id="cleanupTestBtn" disabled>
-      Удалить тестовые
-    </button>
+    <div><b>Тестовые данные</b><div class="muted small" id="testCleanupText">Проверяем…</div></div>
+    <button class="btn danger" id="cleanupTestBtn" disabled>Удалить тестовые</button>
   </div>
 
   <div class="admin-toolbar">
-    <div class="toolbar-search">
-      <input class="input" id="searchInput" placeholder="Поиск: №, мастер, город, заголовок…">
-    </div>
-
+    <div class="toolbar-search"><input class="input" id="searchInput" placeholder="Поиск: №, мастер, город, заголовок…"></div>
     <div class="toolbar-actions">
       <select class="select" id="statusFilter">
-        <option value="">Все статусы</option>
-        <option value="pending_payment">Ожидает оплаты</option>
-        <option value="paid_review">На модерации</option>
-        <option value="published">Опубликовано</option>
-        <option value="hidden">Скрыто</option>
-        <option value="rejected">Отклонено</option>
-        <option value="expired">Истекло</option>
+        <option value="">Все статусы</option><option value="pending_payment">Ожидает оплаты</option><option value="paid_review">На модерации</option><option value="published">Опубликовано</option><option value="hidden">Скрыто</option><option value="rejected">Отклонено</option><option value="expired">Истекло</option>
       </select>
-
-      <button class="btn secondary" id="refreshBtn">
-        Обновить
-      </button>
+      <button class="btn secondary" id="refreshBtn">Обновить</button>
     </div>
   </div>
 
-  <div id="adminStatus" class="notice" style="margin:12px 0">
-    Загрузка…
-  </div>
-
+  <div id="adminStatus" class="notice" style="margin:12px 0">Загрузка…</div>
   <div id="listings" class="admin-list"></div>
 </section>
 
@@ -114,36 +77,20 @@
 <script src="./supabase-config.js"></script>
 <script src="./admin.js?v=public1"></script>
 <script src="./admin-rent-addon.js?v=13"></script>
+<script src="./admin-dashboard-rent.js?v=1"></script>
 
 <script>
-/*
-  Cleanup UI:
-  the old admin.js still knows how to work with imported profiles/claims,
-  but these controls are no longer shown in the admin interface.
-  Also remove the two old dashboard counters if admin.js renders them.
-*/
 (function(){
-  const unwanted = new Set([
-    'Публичных профилей',
-    'Запросов на проверку'
-  ]);
-
+  const unwanted=new Set(['Публичных профилей','Запросов на проверку']);
   function cleanDashboard(){
-    const root = document.getElementById('dashboard');
-    if(!root) return;
-
-    root.querySelectorAll('.dash-card').forEach(card => {
-      const label = card.querySelector('.k')?.textContent?.trim() || '';
-      if(unwanted.has(label)) card.remove();
+    const root=document.getElementById('dashboard');if(!root)return;
+    root.querySelectorAll('.dash-card').forEach(card=>{
+      const label=card.querySelector('.k')?.textContent?.trim()||'';
+      if(unwanted.has(label))card.remove();
     });
   }
-
-  const root = document.getElementById('dashboard');
-  if(root){
-    const obs = new MutationObserver(cleanDashboard);
-    obs.observe(root, {childList:true, subtree:true});
-    cleanDashboard();
-  }
+  const root=document.getElementById('dashboard');
+  if(root){const obs=new MutationObserver(cleanDashboard);obs.observe(root,{childList:true,subtree:true});cleanDashboard();}
 })();
 </script>
 </body>
