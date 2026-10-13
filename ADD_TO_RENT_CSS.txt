@@ -1,0 +1,12 @@
+
+/* RENT PHOTO UPLOAD V1 */
+.rent-upload-box{border:1px solid var(--line);border-radius:16px;background:var(--panel);padding:16px}
+.rent-upload-box>label{display:block;border:1px dashed #565660;border-radius:13px;padding:16px;margin:8px 0 10px;cursor:pointer}
+.rent-upload-box>label span{display:block;color:var(--muted);font-size:13px;margin-top:5px}
+.rent-upload-box input[type=file]{padding:10px;background:#0f0f12}
+.rent-photo-previews{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+.rent-photo-preview{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:12px;background:#0f0f12;min-height:100px}
+.rent-photo-preview img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover}
+.rent-photo-preview span{display:block;padding:6px 8px;color:#aaa;font-size:11px}
+.rent-photo-preview button{position:absolute;right:6px;top:6px;width:30px;height:30px;border:0;border-radius:999px;background:rgba(0,0,0,.75);color:white;font-size:20px;line-height:28px;cursor:pointer}
+@media(max-width:700px){.rent-photo-previews{grid-template-columns:repeat(2,minmax(0,1fr))}}

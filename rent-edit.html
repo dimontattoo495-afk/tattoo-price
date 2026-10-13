@@ -1,7 +1,7 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Редактировать аренду — TATTOO PRICE</title><meta name="robots" content="noindex,nofollow"><link rel="stylesheet" href="rent.css"></head><body>
 <header class="top"><a class="brand" href="index.html">TATTOO <b>PRICE</b></a><nav class="nav"><a href="rent.html">Аренда</a><a href="my.html">Мои объявления</a><a href="index.html">Главная</a></nav></header>
-<main class="wrap"><section class="hero"><div class="eyebrow">ЛИЧНЫЙ КАБИНЕТ · АРЕНДА</div><h1>Редактировать объявление</h1><p class="muted">После сохранения изменений объявление снова отправится на модерацию. PRO, срок и оплаченные продвижения при этом не сбрасываются.</p></section>
+<main class="wrap"><section class="hero"><div class="eyebrow">ЛИЧНЫЙ КАБИНЕТ · АРЕНДА</div><h1>Редактировать объявление</h1><p class="muted">Можно менять текст, цену, контакты и фотографии. После сохранения объявление снова отправится на модерацию.</p></section>
 <div id="msg" class="notice">Загружаем объявление…</div>
 <form id="editForm" class="form" hidden>
 <select name="listing_mode"><option value="offer">Сдаю место</option><option value="wanted">Ищу место</option></select>
@@ -10,9 +10,17 @@
 <input class="span2" name="title" required placeholder="Заголовок"><input name="district" placeholder="Район"><input name="address_text" placeholder="Адрес/ориентир">
 <input type="number" name="price_day" placeholder="₽ / день"><input type="number" name="price_week" placeholder="₽ / неделя"><input type="number" name="price_month" placeholder="₽ / месяц"><div></div>
 <textarea class="span2" name="description" placeholder="Описание"></textarea><textarea class="span2" name="included" placeholder="Что входит"></textarea>
-<textarea class="span2" name="conditions" placeholder="Условия"></textarea><textarea class="span2" name="photos" placeholder="Ссылки на фото, по одной на строку"></textarea>
+<textarea class="span2" name="conditions" placeholder="Условия"></textarea>
+<div class="span2 rent-upload-box">
+  <b>Текущие фотографии</b>
+  <div id="existingPhotos" class="rent-photo-previews"></div>
+  <label for="newRentPhotos"><b>Добавить новые фото</b><span>Можно добавить ещё фотографии с компьютера/телефона. Максимум 8 фото всего.</span></label>
+  <input id="newRentPhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+  <div id="newPhotoInfo" class="muted">Новые фотографии не выбраны.</div>
+  <div id="newPhotoPreview" class="rent-photo-previews"></div>
+</div>
 <input name="contact_name" placeholder="Имя"><input name="contact_phone" placeholder="Телефон"><input name="contact_telegram" placeholder="Telegram"><input name="contact_vk" placeholder="VK">
 <button class="btn primary span4" type="submit">СОХРАНИТЬ И ОТПРАВИТЬ НА МОДЕРАЦИЮ</button>
 </form></main>
-<script src="./supabase-config.js"></script><script src="./tp-auth.js?v=2"></script><script src="./tp-api-payments.js?v=5"></script><script src="./rent-edit.js?v=1"></script>
+<script src="./supabase-config.js"></script><script src="./tp-auth.js?v=2"></script><script src="./tp-api-payments.js?v=5"></script><script src="./rent-photos.js?v=1"></script><script src="./rent-edit.js?v=2"></script>
 </body></html>

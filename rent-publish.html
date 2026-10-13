@@ -8,7 +8,13 @@
 <input class="span2" name="title" required placeholder="Заголовок"><input name="district" placeholder="Район"><input name="address_text" placeholder="Адрес/ориентир">
 <input type="number" name="price_day" placeholder="₽ / день"><input type="number" name="price_week" placeholder="₽ / неделя"><input type="number" name="price_month" placeholder="₽ / месяц"><div></div>
 <textarea class="span2" name="description" placeholder="Описание"></textarea><textarea class="span2" name="included" placeholder="Что входит"></textarea>
-<textarea class="span2" name="conditions" placeholder="Условия"></textarea><textarea class="span2" name="photos" placeholder="Ссылки на фото, по одной на строку"></textarea>
+<textarea class="span2" name="conditions" placeholder="Условия"></textarea>
+<div class="span2 rent-upload-box">
+  <label for="rentPhotos"><b>Фотографии · 1–8 шт.</b><span>Нажми, чтобы выбрать фото с компьютера или телефона. Они автоматически уменьшаются перед загрузкой.</span></label>
+  <input id="rentPhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple required>
+  <div id="rentPhotoInfo" class="muted">Фотографии не выбраны.</div>
+  <div id="rentPhotoPreview" class="rent-photo-previews"></div>
+</div>
 <input name="contact_name" placeholder="Имя"><input name="contact_phone" placeholder="Телефон"><input name="contact_telegram" placeholder="Telegram"><input name="contact_vk" placeholder="VK">
 <div class="span4 rent-tariffs">
 <label class="rent-tariff"><input type="radio" name="plan_choice" value="free" checked><b>FREE · 0 ₽</b><span>Обычная публикация после модерации.</span></label>
@@ -16,5 +22,5 @@
 </div>
 <button id="rentSubmitBtn" class="btn primary span4" type="submit">ОТПРАВИТЬ БЕСПЛАТНО НА МОДЕРАЦИЮ</button>
 </form></main>
-<script src="./supabase-config.js"></script><script src="./tp-auth.js?v=2"></script><script src="./rent-payments.js?v=1"></script><script src="./rent-publish.js?v=30"></script>
+<script src="./supabase-config.js"></script><script src="./tp-auth.js?v=2"></script><script src="./rent-payments.js?v=1"></script><script src="./rent-photos.js?v=1"></script><script src="./rent-publish.js?v=31"></script>
 <script>(async function(){const a=document.getElementById('rentAccountLink');try{const u=window.TPAuth?await TPAuth.getUser():null;if(u){a.href='./my.html';a.textContent='Мои объявления';}}catch(e){}})();</script></body></html>
