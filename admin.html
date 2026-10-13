@@ -14,6 +14,7 @@
   <a class="logo" href="./index.html">TATTOO <b>PRICE</b></a>
   <nav class="nav">
     <a href="./index.html">Сайт</a>
+    <a href="./rent.html">Аренда</a>
     <a href="./my.html">Мои объявления</a>
     <button id="logoutBtn" class="btn secondary" hidden>Выйти</button>
   </nav>
@@ -73,6 +74,26 @@
     <div class="admin-list" id="claimsList"></div>
   </section>
 
+
+  <section class="panel" style="margin-bottom:14px" id="rentAdminSection">
+    <div class="eyebrow">АРЕНДА</div>
+    <h2 style="margin-top:6px">Объявления аренды</h2>
+    <div class="admin-toolbar" style="margin-top:10px">
+      <div class="toolbar-actions">
+        <select class="select" id="rentStatusFilter">
+          <option value="paid_review">На модерации</option>
+          <option value="">Все статусы</option>
+          <option value="published">Опубликовано</option>
+          <option value="hidden">Скрыто</option>
+          <option value="rejected">Отклонено</option>
+        </select>
+        <button class="btn secondary" id="rentRefreshBtn">Обновить аренду</button>
+      </div>
+    </div>
+    <div class="notice" id="rentAdminStatus" style="margin:10px 0">Загружаем…</div>
+    <div class="admin-list" id="rentAdminList"></div>
+  </section>
+
   <div class="test-cleanup" id="testCleanup">
     <div>
       <b>Тестовые данные</b>
@@ -108,5 +129,6 @@
 
 <script src="./supabase-config.js"></script>
 <script src="./admin.js?v=public1"></script>
+<script src="./admin-rent-addon.js?v=12"></script>
 </body>
 </html>
