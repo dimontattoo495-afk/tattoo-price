@@ -2,7 +2,14 @@
 <title>Аренда тату-мест, guest spot и студий | TATTOO PRICE</title>
 <meta name="description" content="Аренда рабочих мест для тату-мастеров, guest spot, кабинетов и тату-студий. Сдавайте или ищите место бесплатно.">
 <meta name="robots" content="index,follow,max-image-preview:large">
-<link rel="canonical" href="https://price.smoke-tattoo.ru/rent.html"><link rel="stylesheet" href="rent.css"></head>
+<link rel="canonical" href="https://price.smoke-tattoo.ru/rent.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="TATTOO PRICE">
+<meta property="og:title" content="Аренда тату-мест, guest spot и студий | TATTOO PRICE">
+<meta property="og:description" content="Рабочие места, guest spot, кабинеты и тату-студии: сдавайте или ищите место.">
+<meta property="og:url" content="https://price.smoke-tattoo.ru/rent.html">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"CollectionPage","name":"Аренда для тату-мастеров и студий","url":"https://price.smoke-tattoo.ru/rent.html","isPartOf":{"@type":"WebSite","name":"TATTOO PRICE","url":"https://price.smoke-tattoo.ru/"}}</script>
+<link rel="stylesheet" href="rent.css"></head>
 <body>
 <header class="top"><a class="brand" href="index.html">TATTOO <b>PRICE</b></a><nav class="nav"><a href="masters.html">Мастера</a><a class="primary" href="rent.html">Аренда</a><a href="rent-publish.html">Разместить аренду</a><a id="rentAccountLink" href="account.html">Войти / кабинет</a></nav></header>
 <main class="wrap">
@@ -10,7 +17,7 @@
 <section class="rent-explain"><div><b>FREE · 0 ₽</b><small>Бесплатная публикация после модерации.</small></div><div><b>PRO · 200 ₽ / 30 дней</b><small>Приоритет выше FREE, заметное оформление и расширенная карточка.</small></div><div><b>Поднять · 50 ₽</b><small>Разовое поднятие наверх выдачи. Можно повторять при необходимости.</small></div></section>
 <section class="filters"><input id="city" placeholder="Город, например Москва"><select id="type"><option value="">Любой тип</option><option value="workplace">Рабочее место</option><option value="guest_spot">Guest spot</option><option value="cabinet">Кабинет</option><option value="studio">Студия целиком</option></select><select id="mode"><option value="">Сдаю или ищу</option><option value="offer">Сдаю</option><option value="wanted">Ищу</option></select><button id="apply" class="btn primary">Найти</button></section>
 <section id="rentGrid" class="grid"></section>
-<footer class="footer">TATTOO PRICE © 2026 · <a href="index.html">Мастера</a> · <a href="rent-publish.html">Разместить аренду</a></footer>
+<footer class="footer">TATTOO PRICE © 2026 · <a href="masters.html">Мастера</a> · <a href="rent-publish.html">Разместить аренду</a></footer>
 </main>
 <script src="./supabase-config.js"></script><script src="./tp-auth.js?v=2"></script><script src="./rent.js?v=20"></script>
 <script>(async function(){const a=document.getElementById('rentAccountLink');try{const u=window.TPAuth?await TPAuth.getUser():null;if(u){a.href='./my.html';a.textContent='Мои объявления';}}catch(e){}})();</script>
