@@ -215,3 +215,51 @@ using (
   and (storage.foldername(name))[1]='market'
   and (storage.foldername(name))[2]=auth.uid()::text
 );
+
+
+create or replace function public.tp_create_market_listing(
+  p_title text,
+  p_category text,
+  p_condition text,
+  p_price integer,
+  p_city text,
+  p_delivery_mode text,
+  p_description text,
+  p_completeness text,
+  p_contact_name text,
+  p_contact_phone text,
+  p_contact_telegram text,
+  p_contact_vk text
+) returns public.tp_market_listings
+language plpgsql
+security definer
+set search_path=public,pg_temp
+as $$
+declare
+  v_row public.tp_market_listings;
+begin
+  if auth.uid() is null then
+    raise exception 'AUTH_REQUIRED';
+  end if;
+
+  insert into public.tp_market_listings(
+    user_id,status,title,category,item_condition,price,city,delivery_mode,
+    description,completeness,photos,contact_name,contact_phone,contact_telegram,contact_vk
+  )
+  values(
+    auth.uid(),'pending',trim(p_title),p_category,p_condition,greatest(coalesce(p_price,0),0),
+    trim(p_city),p_delivery_mode,
+    nullif(trim(coalesce(p_description,'')),''),
+    nullif(trim(coalesce(p_completeness,'')),''),
+    '[]'::jsonb,
+    nullif(trim(coalesce(p_contact_name,'')),''),
+    nullif(trim(coalesce(p_contact_phone,'')),''),
+    nullif(trim(coalesce(p_contact_telegram,'')),''),
+    nullif(trim(coalesce(p_contact_vk,'')),'')
+  )
+  returning * into v_row;
+
+  return v_row;
+end $$;
+
+grant execute on function public.tp_create_market_listing(text,text,text,integer,text,text,text,text,text,text,text,text) to authenticated;
