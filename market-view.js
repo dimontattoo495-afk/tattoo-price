@@ -24,6 +24,22 @@
     return "https://vk.ru/"+encodeURIComponent(s);
   }
 
+  async function shareListing(title){
+    const url=location.href;
+    try{
+      if(navigator.share){
+        await navigator.share({title:title||"Объявление TATTOO PRICE",text:"Посмотри объявление на TATTOO PRICE",url});
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      alert("Ссылка на объявление скопирована");
+    }catch(e){
+      if(e?.name!=="AbortError"){
+        try{await navigator.clipboard.writeText(url);alert("Ссылка на объявление скопирована");}catch{}
+      }
+    }
+  }
+
   async function report(publicNo){
     const reason=document.getElementById("reportReason")?.value||"other";
     const details=document.getElementById("reportDetails")?.value||"";
@@ -85,7 +101,11 @@
         <div class="price">${rub(x.price)}</div>
         <p class="muted">${esc(x.city)}</p>
 
-        ${mainContact?`<p><a class="btn primary" href="${esc(mainContact)}" target="${mainContact.startsWith("http")?"_blank":"_self"}" rel="noopener">СВЯЗАТЬСЯ С ПРОДАВЦОМ</a></p>`:""}
+        <div class="market-actions">
+          ${mainContact?`<a class="btn primary" href="${esc(mainContact)}" target="${mainContact.startsWith("http")?"_blank":"_self"}" rel="noopener">СВЯЗАТЬСЯ С ПРОДАВЦОМ</a>`:""}
+          <button class="btn secondary" id="shareListingBtn" type="button">ПОДЕЛИТЬСЯ</button>
+        </div>
+        <div class="market-grid-note">Опубликовано: ${new Date(x.created_at).toLocaleDateString("ru-RU")}</div>
 
         <div class="market-detail-gallery">${photos}</div>
 
@@ -117,6 +137,7 @@
       `;
 
       document.getElementById("reportBtn")?.addEventListener("click",()=>report(x.public_no));
+      document.getElementById("shareListingBtn")?.addEventListener("click",()=>shareListing(x.title));
     }catch(e){
       root.innerHTML=`<div class="empty">Ошибка: ${esc(e.message)}</div>`;
     }
