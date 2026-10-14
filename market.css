@@ -1,0 +1,8 @@
+@import url('./rent.css');
+.market-warning{margin:18px 0;padding:16px;border:1px solid #5b4426;background:#1b1710;border-radius:14px;color:#e5cf9d;line-height:1.55}
+.market-card-sold{opacity:.66}.market-grid-note{font-size:12px;color:#8f8f99;margin-top:8px}
+.market-category{font-weight:800}
+.market-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.market-detail-gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.market-detail-gallery img{margin:0;height:100%;min-height:220px}
+@media(max-width:700px){.market-detail-gallery{grid-template-columns:1fr}}
