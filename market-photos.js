@@ -28,7 +28,7 @@
       const path=`market/${user.id}/${publicNo}/${Date.now()}-${i+1}.webp`;
       const r=await fetch(`${C.supabaseUrl}/storage/v1/object/${C.storageBucket}/${path}`,{
         method:"POST",
-        headers:{apikey:C.publishableKey,Authorization:`Bearer ${token}`,"Content-Type":"image/webp","x-upsert":"true"},
+        headers:{apikey:C.publishableKey,Authorization:`Bearer ${token}`,"Content-Type":"image/webp"},
         body:files[i]
       });
       const t=await r.text();if(!r.ok)throw new Error(t||`Ошибка загрузки фото ${i+1}`);
