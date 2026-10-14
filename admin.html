@@ -67,6 +67,24 @@
     <div class="admin-list" id="marketAdminList"></div>
   </section>
 
+  <section class="panel" style="margin-bottom:14px" id="marketReportsSection">
+    <div class="eyebrow">БАРАХОЛКА · ЖАЛОБЫ</div>
+    <h2 style="margin-top:6px">Жалобы пользователей</h2>
+    <div class="admin-toolbar" style="margin-top:10px">
+      <div class="toolbar-actions">
+        <select class="select" id="marketReportStatusFilter">
+          <option value="new">Новые</option>
+          <option value="">Все</option>
+          <option value="reviewed">Просмотренные</option>
+          <option value="closed">Закрытые</option>
+        </select>
+        <button class="btn secondary" id="marketReportRefreshBtn">Обновить жалобы</button>
+      </div>
+    </div>
+    <div class="notice" id="marketReportStatus" style="margin:10px 0">Загружаем…</div>
+    <div class="admin-list" id="marketReportList"></div>
+  </section>
+
   <div class="test-cleanup" id="testCleanup">
     <div><b>Тестовые данные</b><div class="muted small" id="testCleanupText">Проверяем…</div></div>
     <button class="btn danger" id="cleanupTestBtn" disabled>Удалить тестовые</button>
