@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://price.smoke-tattoo.ru/</loc><lastmod>2026-10-11T12:59:24Z</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://price.smoke-tattoo.ru/</loc><lastmod>2026-10-14</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://price.smoke-tattoo.ru/masters.html</loc><lastmod>2026-10-14</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://price.smoke-tattoo.ru/rent.html</loc><lastmod>2026-10-14</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://price.smoke-tattoo.ru/market.html</loc><lastmod>2026-10-14</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://price.smoke-tattoo.ru/about.html</loc><lastmod>2026-10-11T12:59:24Z</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://price.smoke-tattoo.ru/rules.html</loc><lastmod>2026-10-11T12:59:24Z</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://price.smoke-tattoo.ru/payment.html</loc><lastmod>2026-10-11T12:59:24Z</lastmod><changefreq>monthly</changefreq><priority>0.4</priority></url>
