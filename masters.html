@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Тату-мастера и работы | TATTOO PRICE</title>
+<meta name="description" content="Каталог тату-мастеров и работ: стиль, город, цена и прямые контакты.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://price.smoke-tattoo.ru/masters.html">
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <a class="logo" href="./index.html">TATTOO <b>PRICE</b></a>
+  <nav class="nav">
+    <a class="primary" href="./masters.html">Мастера</a>
+    <a href="./rent.html">Аренда</a>
+    <a href="./market.html">Барахолка</a>
+    <a id="accountNavLink" href="./account.html">Войти / кабинет</a>
+    <a href="./publish.html" class="secondary">Разместить работу</a>
+  </nav>
+</header>
+<section class="pagehead">
+  <div class="eyebrow">МАСТЕРА И РАБОТЫ</div>
+  <h1>Найди мастера по работе</h1>
+  <div class="muted">Смотрите реальные работы, стиль, город, цену и связывайтесь с мастером напрямую.</div>
+</section>
+<section id="works">
+<div class="filters">
+  <input class="input" id="search" placeholder="Поиск: волк, рукав, реализм…">
+  <select class="select" id="city"><option value="">Все города</option><option>Москва</option><option>Санкт-Петербург</option><option>Казань</option></select>
+  <select class="select" id="style"><option value="">Все стили</option><option>Реализм</option><option>Old School</option><option>Графика</option><option>Орнаментал</option></select>
+  <select class="select" id="price"><option value="">Любая цена</option><option value="15">до 15 000 ₽</option><option value="25">до 25 000 ₽</option><option value="40">до 40 000 ₽</option></select>
+</div>
+<div class="section-title"><h2>Свежие работы</h2><div class="muted" id="count">—</div></div>
+<div class="grid" id="cards"></div>
+</section>
+<footer class="footer"><div>TATTOO PRICE © 2026</div><a href="./index.html">Главная</a><a href="./rent.html">Аренда</a><a href="./market.html">Барахолка</a></footer>
+</div>
+<script src="./supabase-config.js"></script>
+<script src="./tp-auth.js?v=2"></script>
+<script src="./tp-api.js?v=public1"></script>
+<script src="./app-live.js?v=public2"></script>
+<script>
+(async function(){const link=document.getElementById('accountNavLink');try{const user=window.TPAuth?await TPAuth.getUser():null;if(user){link.href='./my.html';link.textContent='Мои объявления';}}catch(e){}})();
+</script>
+</body></html>
