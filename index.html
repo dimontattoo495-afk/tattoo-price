@@ -63,7 +63,7 @@
 
 <section class="home-sections">
   <article class="home-section-card featured">
-    <div class="num">01 · МАСТЕРА</div>
+    <div class="num">01 · МАСТЕРА · <span id="homeMastersCount">—</span></div>
     <h2>Найти мастера по реальным работам</h2>
     <p>Смотрите портфолио, стиль, город, ориентир по цене и связывайтесь с мастером напрямую.</p>
     <div class="home-tags"><span class="tag">Портфолио</span><span class="tag">Цены</span><span class="tag">Контакты</span></div>
@@ -74,7 +74,7 @@
   </article>
 
   <article class="home-section-card">
-    <div class="num">02 · АРЕНДА</div>
+    <div class="num">02 · АРЕНДА · <span id="homeRentCount">—</span></div>
     <h2>Найти или сдать место для работы</h2>
     <p>Рабочие места, guest spot, отдельные кабинеты и тату-студии целиком.</p>
     <div class="home-tags"><span class="tag">Место</span><span class="tag">Guest spot</span><span class="tag">Студия</span></div>
@@ -85,7 +85,7 @@
   </article>
 
   <article class="home-section-card">
-    <div class="num">03 · БАРАХОЛКА · 0 ₽</div>
+    <div class="num">03 · БАРАХОЛКА · 0 ₽ · <span id="homeMarketCount">—</span></div>
     <h2>Купить или продать тату-оборудование</h2>
     <p>Машинки, блоки питания, мебель, принтеры и аксессуары. Публикация полностью бесплатна.</p>
     <div class="home-tags"><span class="tag">Бесплатно</span><span class="tag">Без комиссии</span><span class="tag">Прямой контакт</span></div>
@@ -144,6 +144,28 @@
       if(user){link.href='./my.html';link.textContent='Мои объявления';link.title=user.email||'Личный кабинет';}
       else{link.href='./account.html';link.textContent='Войти / кабинет';}
     }
+  }catch(e){}
+
+  try{
+    const C=window.TP_CONFIG;
+    async function rpc(name,body){
+      const r=await fetch(`${C.supabaseUrl}/rest/v1/rpc/${name}`,{
+        method:'POST',
+        headers:{apikey:C.publishableKey,'Content-Type':'application/json'},
+        body:JSON.stringify(body||{})
+      });
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return await r.json();
+    }
+    const [masters,rent,market]=await Promise.all([
+      window.TP?.getFeed?TP.getFeed({limit:50}):rpc('tp_get_feed',{p_city:null,p_style:null,p_limit:50,p_offset:0}),
+      rpc('tp_get_rent_feed',{p_city:null,p_type:null,p_mode:null}),
+      rpc('tp_get_market_feed',{p_city:null,p_category:null,p_condition:null,p_max_price:null})
+    ]);
+    const set=(id,n,label)=>{const el=document.getElementById(id);if(el)el.textContent=`${Array.isArray(n)?n.length:0} ${label}`;};
+    set('homeMastersCount',masters,'работ');
+    set('homeRentCount',rent,'объявл.');
+    set('homeMarketCount',market,'товаров');
   }catch(e){}
 })();
 </script>
