@@ -14,7 +14,7 @@
   <a class="logo" href="./index.html">TATTOO <b>PRICE</b></a>
   <nav class="nav">
     <a href="./index.html">Сайт</a>
-    <a href="./rent.html">Аренда</a>
+    <a href="./rent.html">Аренда</a><a href="./market.html">Барахолка</a>
     <a href="./my.html">Мои объявления</a>
     <button id="logoutBtn" class="btn secondary" hidden>Выйти</button>
   </nav>
@@ -52,6 +52,21 @@
     <div class="admin-list" id="rentAdminList"></div>
   </section>
 
+  <section class="panel" style="margin-bottom:14px" id="marketAdminSection">
+    <div class="eyebrow">БАРАХОЛКА</div>
+    <h2 style="margin-top:6px">Товары на модерации</h2>
+    <div class="admin-toolbar" style="margin-top:10px">
+      <div class="toolbar-actions">
+        <select class="select" id="marketStatusFilter">
+          <option value="pending">На модерации</option><option value="">Все статусы</option><option value="published">Опубликовано</option><option value="sold">Продано</option><option value="hidden">Скрыто</option><option value="rejected">Отклонено</option>
+        </select>
+        <button class="btn secondary" id="marketRefreshBtn">Обновить барахолку</button>
+      </div>
+    </div>
+    <div class="notice" id="marketAdminStatus" style="margin:10px 0">Загружаем…</div>
+    <div class="admin-list" id="marketAdminList"></div>
+  </section>
+
   <div class="test-cleanup" id="testCleanup">
     <div><b>Тестовые данные</b><div class="muted small" id="testCleanupText">Проверяем…</div></div>
     <button class="btn danger" id="cleanupTestBtn" disabled>Удалить тестовые</button>
@@ -78,6 +93,7 @@
 <script src="./admin.js?v=public1"></script>
 <script src="./admin-rent-addon.js?v=13"></script>
 <script src="./admin-dashboard-rent.js?v=1"></script>
+<script src="./market-admin.js?v=1"></script>
 
 <script>
 (function(){
