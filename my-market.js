@@ -1,0 +1,13 @@
+(function(){
+  const C=window.TP_CONFIG,root=document.getElementById("marketList"),status=document.getElementById("marketStatus");
+  if(!root||!status)return;
+  const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+  const st={pending:"На модерации",published:"Опубликовано",sold:"Продано",hidden:"Скрыто",rejected:"Отклонено"};
+  async function rpc(name,body){const token=await TPAuth.getAccessToken();if(!token)throw new Error("Сессия закончилась");const r=await fetch(`${C.supabaseUrl}/rest/v1/rpc/${name}`,{method:"POST",headers:{apikey:C.publishableKey,Authorization:`Bearer ${token}`,"Content-Type":"application/json"},body:JSON.stringify(body||{})});const t=await r.text();let d=null;try{d=t?JSON.parse(t):null}catch{d=t}if(!r.ok)throw new Error(d?.message||t||`HTTP ${r.status}`);return d}
+  function card(x){const no=Number(x.public_no),sold=x.status==="sold";return `<article class="owner-card"><div class="owner-head"><div><div class="small">БАРАХОЛКА №${no}</div><div class="owner-title">${esc(x.title)}</div><div class="owner-meta"><span class="tag">${esc(x.city)}</span><span class="tag">${x.item_condition==="new"?"Новое":"Б/у"}</span><span class="tag">${esc(st[x.status]||x.status)}</span></div></div><div style="font-weight:900">${new Intl.NumberFormat("ru-RU").format(x.price||0)} ₽</div></div><div class="owner-actions"><a class="btn secondary" href="./market-edit.html?n=${no}">Редактировать</a>${x.status==="published"?`<a class="btn secondary" href="./market-view.html?n=${no}">Открыть</a><button class="btn secondary" onclick="TPMarketMine.sold(${no},true)">Продано</button>`:""}${sold?`<button class="btn secondary" onclick="TPMarketMine.sold(${no},false)">Вернуть в продажу</button>`:""}<button class="btn secondary" onclick="TPMarketMine.remove(${no})">Удалить</button></div></article>`}
+  async function load(){try{const rows=await rpc("tp_get_my_market_listings",{});status.textContent=rows?.length?`Объявлений в барахолке: ${rows.length}`:"У вас пока нет товаров.";root.innerHTML=(rows||[]).map(card).join("")||'<div class="empty-box"><a class="btn secondary" href="./market-publish.html">ПРОДАТЬ БЕСПЛАТНО</a></div>'}catch(e){status.textContent="Не удалось загрузить барахолку: "+e.message}}
+  async function sold(no,val){await rpc("tp_market_mark_sold",{p_public_no:no,p_sold:val});load()}
+  async function remove(no){if(!confirm(`Удалить объявление №${no}?`))return;await rpc("tp_delete_my_market_listing",{p_public_no:no});load()}
+  window.TPMarketMine={sold,remove,load};
+  document.addEventListener("DOMContentLoaded",load);
+})();
