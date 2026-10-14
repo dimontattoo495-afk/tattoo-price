@@ -37,6 +37,38 @@
 <section id="adminPanel" hidden>
   <div class="dashboard-grid" id="dashboard"></div>
 
+  <section class="panel analytics-panel" id="analyticsPanel" style="margin-bottom:14px">
+    <div class="admin-card-head">
+      <div>
+        <div class="eyebrow">СТАТИСТИКА</div>
+        <h2 id="analyticsPeriodTitle" style="margin:6px 0 0">Сегодня</h2>
+      </div>
+      <div class="toolbar-actions">
+        <select class="select" id="analyticsPeriod">
+          <option value="1">Сегодня</option>
+          <option value="7">7 дней</option>
+          <option value="30">30 дней</option>
+        </select>
+        <button class="btn secondary" id="analyticsRefreshBtn">Обновить</button>
+      </div>
+    </div>
+
+    <div class="dashboard-grid analytics-cards" id="analyticsCards" style="margin-top:14px"></div>
+
+    <div class="analytics-grid">
+      <div class="analytics-box">
+        <h3>По разделам</h3>
+        <div id="analyticsSections"><div class="muted">Загружаем…</div></div>
+      </div>
+      <div class="analytics-box">
+        <h3>Популярные страницы</h3>
+        <div id="analyticsPages"><div class="muted">Загружаем…</div></div>
+      </div>
+    </div>
+    <div class="notice" id="analyticsStatus" style="margin-top:12px">Загрузка…</div>
+  </section>
+
+
   <section class="panel" style="margin-bottom:14px" id="rentAdminSection">
     <div class="eyebrow">АРЕНДА</div>
     <h2 style="margin-top:6px">Объявления аренды</h2>
@@ -112,6 +144,7 @@
 <script src="./admin-rent-addon.js?v=13"></script>
 <script src="./admin-dashboard-rent.js?v=1"></script>
 <script src="./market-admin.js?v=2"></script>
+<script src="./admin-analytics.js?v=1"></script>
 
 <script>
 (function(){
