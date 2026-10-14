@@ -6,3 +6,12 @@
 .market-detail-gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .market-detail-gallery img{margin:0;height:100%;min-height:220px}
 @media(max-width:700px){.market-detail-gallery{grid-template-columns:1fr}}
+
+.market-contact-buttons{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 18px}
+.market-contact-buttons .btn{min-width:150px}
+.market-report{margin-top:24px;padding-top:18px;border-top:1px solid var(--line)}
+.market-report summary{cursor:pointer;color:#b9b9c2;font-weight:800}
+.market-report-form{display:grid;gap:10px;max-width:620px;margin-top:12px}
+.market-report-form select,.market-report-form textarea{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:#0f0f12;color:#fff}
+.market-report-form textarea{min-height:90px}
+.market-report-status{font-size:13px;color:#9dd9ae}
