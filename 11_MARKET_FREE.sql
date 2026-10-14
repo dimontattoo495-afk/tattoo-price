@@ -263,3 +263,92 @@ begin
 end $$;
 
 grant execute on function public.tp_create_market_listing(text,text,text,integer,text,text,text,text,text,text,text,text) to authenticated;
+
+
+-- Жалобы на объявления барахолки
+create table if not exists public.tp_market_reports (
+  id uuid primary key default gen_random_uuid(),
+  listing_id uuid not null references public.tp_market_listings(id) on delete cascade,
+  public_no bigint not null,
+  reason text not null check (reason in ('fraud','prohibited','wrong_info','sold','other')),
+  details text,
+  status text not null default 'new' check (status in ('new','reviewed','closed')),
+  created_at timestamptz not null default now()
+);
+
+alter table public.tp_market_reports enable row level security;
+revoke all on public.tp_market_reports from anon,authenticated;
+
+create or replace function public.tp_report_market_listing(
+  p_public_no bigint,
+  p_reason text,
+  p_details text default null
+) returns void
+language plpgsql
+security definer
+set search_path=public,pg_temp
+as $$
+declare
+  v_id uuid;
+begin
+  if p_reason not in ('fraud','prohibited','wrong_info','sold','other') then
+    raise exception 'Неверная причина жалобы';
+  end if;
+
+  select id into v_id
+  from public.tp_market_listings
+  where public_no=p_public_no and status='published'
+  limit 1;
+
+  if v_id is null then
+    raise exception 'Объявление не найдено';
+  end if;
+
+  insert into public.tp_market_reports(listing_id,public_no,reason,details)
+  values(v_id,p_public_no,p_reason,nullif(left(trim(coalesce(p_details,'')),1000),''));
+end $$;
+
+create or replace function public.tp_market_admin_reports(p_status text default 'new')
+returns table(
+  id uuid,
+  public_no bigint,
+  listing_title text,
+  reason text,
+  details text,
+  status text,
+  created_at timestamptz
+)
+language plpgsql
+security definer
+set search_path=public,pg_temp
+as $$
+begin
+  if not exists(select 1 from public.tp_admins where user_id=auth.uid()) then
+    raise exception 'Недостаточно прав';
+  end if;
+
+  return query
+  select r.id,r.public_no,l.title,r.reason,r.details,r.status,r.created_at
+  from public.tp_market_reports r
+  join public.tp_market_listings l on l.id=r.listing_id
+  where p_status is null or p_status='' or r.status=p_status
+  order by r.created_at desc;
+end $$;
+
+create or replace function public.tp_market_admin_report_status(p_id uuid,p_status text)
+returns void
+language plpgsql
+security definer
+set search_path=public,pg_temp
+as $$
+begin
+  if not exists(select 1 from public.tp_admins where user_id=auth.uid()) then
+    raise exception 'Недостаточно прав';
+  end if;
+  if p_status not in ('new','reviewed','closed') then raise exception 'Неверный статус'; end if;
+  update public.tp_market_reports set status=p_status where id=p_id;
+end $$;
+
+grant execute on function public.tp_report_market_listing(bigint,text,text) to anon,authenticated;
+grant execute on function public.tp_market_admin_reports(text) to authenticated;
+grant execute on function public.tp_market_admin_report_status(uuid,text) to authenticated;
