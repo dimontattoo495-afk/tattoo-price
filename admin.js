@@ -188,6 +188,13 @@ async function loadListings() {
     `Загружено: ${currentListings.length}`;
 }
 
+
+function refreshAddonSections(){
+  try{ window.TPRentAdmin?.load?.(); }catch(e){}
+  try{ window.TPMarketAdmin?.load?.(); }catch(e){}
+  try{ window.TPMarketAdmin?.loadReports?.(); }catch(e){}
+}
+
 async function refreshAll() {
   $("#adminStatus").textContent = "Обновляем данные…";
 
@@ -384,6 +391,7 @@ window.resolveClaim = async function(id, decision) {
     document.querySelector("#claimsStatus").textContent = "Сохраняем решение…";
     await api({action:"resolve_claim", claim_id:id, decision});
     await refreshAll();
+    refreshAddonSections();
   } catch(e) {
     document.querySelector("#claimsStatus").textContent = "Ошибка: " + e.message;
   }
@@ -532,7 +540,7 @@ if(restoreSession()) {
   $("#adminPanel").hidden = false;
   $("#logoutBtn").hidden = false;
 
-  refreshAll().catch(e => {
+  refreshAll().then(()=>refreshAddonSections()).catch(e => {
     $("#adminStatus").textContent =
       "Ошибка: " + e.message;
   });
