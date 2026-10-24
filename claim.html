@@ -56,4 +56,5 @@ catch(e){setStatus('Ошибка: '+e.message)}}
 document.querySelector('#copyBtn').onclick=async()=>{try{await navigator.clipboard.writeText(currentClaim?.challenge_code||'');document.querySelector('#copyBtn').textContent='✓ СКОПИРОВАНО';setTimeout(()=>document.querySelector('#copyBtn').textContent='СКОПИРОВАТЬ КОД',1500)}catch{}};
 document.querySelector('#submitBtn').onclick=async()=>{if(!currentClaim)return;const b=document.querySelector('#submitBtn');b.disabled=true;b.textContent='ОТПРАВЛЯЕМ…';try{await api({action:'submit',claim_id:currentClaim.id,evidence_url:document.querySelector('#evidenceUrl').value.trim()||currentClaim.source_url||null,evidence_note:document.querySelector('#evidenceNote').value.trim()||null});claimArea.classList.add('hidden');doneArea.classList.remove('hidden');document.querySelector('#doneText').textContent=mode==='removal'?'Запрос на удаление отправлен. После проверки владения профиль будет удалён.':'Запрос отправлен. После проверки профиль будет привязан к вашему аккаунту и появится в «Моих объявлениях».'}catch(e){setStatus('Ошибка: '+e.message);statusEl.classList.remove('hidden');b.disabled=false;b.textContent='ОТПРАВИТЬ НА ПРОВЕРКУ'}};
 start();
-</script></body></html>
+</script><script src="./stats4u-count.js?v=1" defer></script>
+</body></html>
